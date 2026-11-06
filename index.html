@@ -246,6 +246,39 @@
     }
     .path-node b { display: block; color: var(--text); font-size: 12px; }
     .path-node small { display: block; margin-top: 6px; color: var(--muted); font-size: 10px; }
+    .workload-chain { display: grid; gap: 12px; }
+    .chain-step {
+      display: grid; grid-template-columns: 78px minmax(0, 1fr) minmax(310px, .72fr); gap: 18px;
+      padding: 18px; border: 1px solid var(--line); border-radius: 13px;
+      background: linear-gradient(120deg, rgba(15,26,46,.9), rgba(6,12,22,.86));
+    }
+    .chain-index {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 106px; border-right: 1px solid var(--line);
+    }
+    .chain-index b { color: var(--cyan); font: 750 25px/1 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .chain-index small { margin-top: 9px; color: var(--muted); font: 9px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; }
+    .chain-body h3 { margin: 0 0 8px; font-size: 17px; letter-spacing: -.02em; }
+    .chain-body p { margin: 0; color: #a8bdd8; font-size: 12px; }
+    .chain-interface { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .chain-interface span {
+      padding: 4px 7px; border: 1px solid var(--line); border-radius: 6px;
+      color: var(--cyan); background: rgba(50,108,229,.08); font: 10px/1.25 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .chain-example {
+      margin: 0; padding: 13px; overflow-x: auto; white-space: pre; align-self: stretch;
+      border: 1px solid #1e3352; border-radius: 9px; color: #c8e4ff; background: #030810;
+      font: 9.5px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .chain-branch {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0;
+    }
+    .branch-card {
+      padding: 15px; border: 1px solid var(--line); border-radius: 11px; background: rgba(10,18,32,.7);
+    }
+    .branch-card b { display: block; margin-bottom: 7px; color: var(--yellow); font-size: 12px; }
+    .branch-card p { margin: 0; color: var(--muted); font-size: 11px; }
+    .branch-card code { display: block; margin-top: 9px; font-size: 9px; }
     .relation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
     .relation-card {
       padding: 17px; border: 1px solid var(--line); border-radius: 12px;
@@ -257,6 +290,87 @@
       display: block; margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--line);
       color: var(--cyan); font: 10px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
     }
+    .informer-pipeline {
+      display: grid; grid-template-columns: repeat(8, 1fr); gap: 15px; margin-bottom: 18px;
+      padding: 18px; border: 1px solid var(--line); border-radius: var(--radius);
+      background: rgba(10,18,32,.8); box-shadow: var(--shadow);
+    }
+    .informer-stage {
+      position: relative; min-height: 120px; padding: 14px 11px;
+      border: 1px solid var(--line); border-radius: 10px; background: #060d18;
+    }
+    .informer-stage:not(:last-child)::after {
+      content: "→"; position: absolute; top: 50%; right: -13px; z-index: 2;
+      transform: translate(50%,-50%); color: var(--cyan); font-weight: 800;
+    }
+    .informer-stage .stage-num { color: var(--cyan); font: 700 9px/1 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .informer-stage b { display: block; margin-top: 9px; font-size: 12px; }
+    .informer-stage small { display: block; margin-top: 7px; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .informer-deep-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 18px; }
+    .informer-panel {
+      padding: 22px; border: 1px solid var(--line); border-radius: var(--radius);
+      background: rgba(10,18,32,.8); box-shadow: var(--shadow);
+    }
+    .informer-panel h3 { margin: 0 0 15px; font-size: 20px; letter-spacing: -.03em; }
+    .mechanism-list { display: grid; gap: 9px; }
+    .mechanism-item {
+      display: grid; grid-template-columns: 105px 1fr; gap: 13px; padding: 12px;
+      border: 1px solid var(--line); border-radius: 9px; background: rgba(6,13,24,.75);
+    }
+    .mechanism-item b { color: var(--cyan); font: 650 11px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .mechanism-item p { margin: 0; color: #a8bdd8; font-size: 12px; }
+    .informer-code {
+      margin: 0; min-height: 100%; padding: 16px; overflow-x: auto; white-space: pre;
+      border: 1px solid #1e3352; border-radius: 11px; color: #c8e4ff; background: #030810;
+      font: 10px/1.65 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .pitfall-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
+    .pitfall {
+      padding: 15px; border: 1px solid var(--line); border-radius: 10px; background: rgba(8,14,26,.78);
+    }
+    .pitfall b { display: block; margin-bottom: 6px; color: var(--yellow); font-size: 12px; }
+    .pitfall p { margin: 0; color: var(--muted); font-size: 11px; }
+    /* Readability scale: keep dense diagrams legible on laptop and projected screens. */
+    body { font-size: 17px; }
+    nav { font-size: 14px; }
+    .lead { font-size: clamp(18px, 1.8vw, 22px); }
+    .section-note { font-size: 15px; }
+    .pill { font-size: 13px; }
+    .node strong { font-size: 16px; }
+    .node small { font-size: 12px; }
+    .wire-title strong { font-size: 17px; }
+    .protocol-fact span, .wire-note { font-size: 13px; }
+    .wire-flow { font-size: 13px; }
+    .code-sample { font-size: 11.5px; }
+    .detail p, .detail dd, .callout { font-size: 15px; }
+    .component-card { min-height: 150px; }
+    .component-card b { font-size: 16px; }
+    .component-card code { font-size: 11.5px; }
+    .component-card p { font-size: 14px; }
+    .component-card .edge { font-size: 11.5px; }
+    .path-node b { font-size: 14px; }
+    .path-node small { font-size: 12px; }
+    .chain-body h3 { font-size: 19px; }
+    .chain-body p { font-size: 14px; }
+    .chain-interface span { font-size: 11px; }
+    .chain-example { font-size: 11px; }
+    .branch-card b { font-size: 14px; }
+    .branch-card p { font-size: 13px; }
+    .branch-card code { font-size: 11px; }
+    .relation-card h3 { font-size: 17px; }
+    .relation-card p { font-size: 14px; }
+    .relation-card .relation { font-size: 11.5px; }
+    .informer-stage b { font-size: 14px; }
+    .informer-stage small { font-size: 11.5px; }
+    .mechanism-item b { font-size: 12px; }
+    .mechanism-item p { font-size: 14px; }
+    .informer-code { font-size: 11px; }
+    .pitfall b { font-size: 14px; }
+    .pitfall p { font-size: 13px; }
+    .catalog-row { font-size: 14px; }
+    .qa summary { font-size: 16px; }
+    .qa .answer { font-size: 14.5px; }
+    .era p { font-size: 14px; }
     .history { padding: 26px; }
     .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 20px; }
     .era { padding: 18px; border: 1px solid var(--line); border-radius: 13px; background: rgba(8,14,26,.7); }
@@ -274,11 +388,21 @@
       .interview-grid { grid-template-columns: 1fr; }
       .call-path { grid-template-columns: repeat(2, 1fr); }
       .path-node:not(:last-child)::after { display: none; }
+      .chain-step { grid-template-columns: 68px 1fr; }
+      .chain-example { grid-column: 1 / -1; }
+      .chain-branch { grid-template-columns: 1fr; }
       .relation-grid { grid-template-columns: 1fr; }
+      .informer-pipeline { grid-template-columns: repeat(2, 1fr); }
+      .informer-stage:not(:last-child)::after { display: none; }
+      .informer-deep-grid { grid-template-columns: 1fr; }
+      .pitfall-grid { grid-template-columns: 1fr 1fr; }
       .footer-inner { flex-direction: column; }
     }
     @media (max-width: 620px) {
-      .component-grid, .call-path { grid-template-columns: 1fr; }
+      .component-grid, .call-path, .informer-pipeline, .pitfall-grid { grid-template-columns: 1fr; }
+      .mechanism-item { grid-template-columns: 1fr; }
+      .chain-step { grid-template-columns: 1fr; }
+      .chain-index { min-height: auto; padding-bottom: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
     }
   </style>
 </head>
@@ -288,6 +412,8 @@
       <div class="brand"><span class="brand-mark">⎈</span> Kubernetes Internals</div>
       <nav aria-label="页面导航">
         <a href="#k8s-internals">整体架构</a>
+        <a href="#workload-chain">Pod 创建链</a>
+        <a href="#informer-internals">Informer</a>
         <a href="#architecture">CRD 实现</a>
         <a href="#lifecycle">Reconcile 链路</a>
         <a href="#interfaces">接口目录</a>
@@ -314,7 +440,7 @@
 
     <section class="shell section" id="architecture">
       <div class="section-head">
-        <div><div class="eyebrow">02 / CRD Implementation</div><h2>CRD 如何接入 Kubernetes API 与控制循环</h2></div>
+        <div><div class="eyebrow">03 / CRD Implementation</div><h2>CRD 如何接入 Kubernetes API 与控制循环</h2></div>
         <p class="section-note">在整体架构之上，继续拆解「声明 CRD → 用户提交 CR → Operator 收敛」的实现。API Aggregation 与 CRD 是两条不同的扩展 API 机制。</p>
       </div>
       <div class="legend">
@@ -645,6 +771,246 @@ GET /apis/apps.example.com/v1/namespaces/default/myapps?watch=true&resourceVersi
         <div class="path-node"><b>CRI + CNI + CSI</b><small>容器、网络、存储</small></div>
       </div>
 
+      <div class="section-head" id="workload-chain" style="margin-top:32px; scroll-margin-top:80px">
+        <div><div class="eyebrow">Deep dive · Control to process</div><h2>逐阶段接口、对象与请求示例</h2></div>
+        <p class="section-note">这不是一条同步 RPC 链：控制器主要通过 apiserver 中的对象变化异步接力；只有节点落地阶段才进入 CRI、CNI、CSI 与 OCI Runtime 等本地接口。</p>
+      </div>
+
+      <div class="workload-chain">
+        <article class="chain-step">
+          <div class="chain-index"><b>01</b><small>declare</small></div>
+          <div class="chain-body">
+            <h3>kubectl 提交 Deployment</h3>
+            <p>kubectl 读取 kubeconfig 与 Discovery/RESTMapper，把 GVK <code>apps/v1, Kind=Deployment</code> 映射为 GVR <code>apps/v1/deployments</code>，再向 apiserver 发起创建、Patch 或 Server-Side Apply。kubectl 本身不会创建 ReplicaSet 或 Pod。</p>
+            <div class="chain-interface"><span>HTTPS REST</span><span>JSON / YAML</span><span>PATCH application/apply-patch+yaml</span><span>OIDC / Token / mTLS</span></div>
+          </div>
+          <pre class="chain-example"># Server-Side Apply 的概念化请求
+PATCH /apis/apps/v1/namespaces/default/deployments/web
+  ?fieldManager=kubectl&amp;force=true
+Content-Type: application/apply-patch+yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: web}
+spec:
+  replicas: 3
+  selector: {matchLabels: {app: web}}
+  template:
+    metadata: {labels: {app: web}}
+    spec:
+      containers:
+      - {name: web, image: nginx:1.27}</pre>
+        </article>
+
+        <article class="chain-step">
+          <div class="chain-index"><b>02</b><small>persist</small></div>
+          <div class="chain-body">
+            <h3>apiserver 校验并持久化对象</h3>
+            <p>请求依次经过认证、授权、Mutating Admission、默认值/字段校验和 Validating Admission。通过后，apiserver 将内部版本对象序列化到 etcd，并返回带 UID、resourceVersion 与 generation 的 Deployment。</p>
+            <div class="chain-interface"><span>Authentication</span><span>RBAC Authorizer</span><span>AdmissionReview HTTPS</span><span>etcd v3 gRPC</span></div>
+          </div>
+          <pre class="chain-example"># 概念化存储路径
+/registry/deployments/default/web
+
+# 返回对象中的关键元数据
+metadata:
+  uid: 68d2...
+  resourceVersion: "18421"
+  generation: 1
+
+# etcd 只保存状态，不运行 Controller</pre>
+        </article>
+
+        <article class="chain-step">
+          <div class="chain-index"><b>03</b><small>deploy ctrl</small></div>
+          <div class="chain-body">
+            <h3>Deployment Controller 创建 ReplicaSet</h3>
+            <p>kube-controller-manager 内的 Deployment Controller 通过 SharedInformer Watch Deployment 和 ReplicaSet。它计算 PodTemplateHash，查找匹配的 ReplicaSet；不存在时通过 apiserver 创建，并设置 Deployment OwnerReference。</p>
+            <div class="chain-interface"><span>List-Watch</span><span>SharedInformer</span><span>WorkQueue</span><span>POST ReplicaSet REST</span></div>
+          </div>
+          <pre class="chain-example">POST /apis/apps/v1/namespaces/default/replicasets
+
+metadata:
+  name: web-7d9c...
+  ownerReferences:
+  - apiVersion: apps/v1
+    kind: Deployment
+    name: web
+    uid: 68d2...
+    controller: true
+spec:
+  replicas: 3
+  template: ... # 来自 Deployment</pre>
+        </article>
+
+        <article class="chain-step">
+          <div class="chain-index"><b>04</b><small>rs ctrl</small></div>
+          <div class="chain-body">
+            <h3>ReplicaSet Controller 创建 Pod 对象</h3>
+            <p>ReplicaSet Controller 比较 <code>spec.replicas</code> 与活跃 Pod 数量。缺少副本时创建 Pod；过多时按策略删除。此时 Pod 只是 etcd 中的 API 对象，通常还没有 <code>spec.nodeName</code>，状态为 Pending。</p>
+            <div class="chain-interface"><span>Informer + Lister</span><span>Expectations</span><span>POST /api/v1/pods</span><span>OwnerReference</span></div>
+          </div>
+          <pre class="chain-example">POST /api/v1/namespaces/default/pods
+
+metadata:
+  generateName: web-7d9c-
+  ownerReferences:
+  - kind: ReplicaSet
+    name: web-7d9c...
+spec:
+  nodeName: ""       # 尚未调度
+  containers:
+  - name: web
+    image: nginx:1.27</pre>
+        </article>
+
+        <article class="chain-step">
+          <div class="chain-index"><b>05</b><small>schedule</small></div>
+          <div class="chain-body">
+            <h3>Scheduler 选择 Node 并执行 Binding</h3>
+            <p>Scheduler Watch <code>spec.nodeName</code> 为空的 Pod，进入 Scheduling Queue。Scheduling Framework 依次执行 PreFilter、Filter、Score、Reserve、Permit、PreBind 和 Bind；默认 Binder 最终向 Pod binding 子资源写入目标 Node。</p>
+            <div class="chain-interface"><span>Pod List-Watch</span><span>Scheduling Framework Plugins</span><span>POST pods/{name}/binding</span><span>Event</span></div>
+          </div>
+          <pre class="chain-example">POST /api/v1/namespaces/default/pods/web-7d9c-x/binding
+
+apiVersion: v1
+kind: Binding
+metadata:
+  name: web-7d9c-x
+target:
+  apiVersion: v1
+  kind: Node
+  name: worker-1
+
+# 结果：Pod.spec.nodeName = worker-1</pre>
+        </article>
+
+        <article class="chain-step">
+          <div class="chain-index"><b>06</b><small>sync pod</small></div>
+          <div class="chain-body">
+            <h3>目标 Node 上的 kubelet 接管 Pod</h3>
+            <p>kubelet 通过 apiserver Watch 分配给本节点的 Pod，也可接收静态 Pod 来源。SyncLoop 合并 Pod 更新、PLEG/runtime 事件、探针和周期同步，随后执行 <code>syncPod</code>：准备目录、Secret/ConfigMap、Volume、PodSandbox 与容器。</p>
+            <div class="chain-interface"><span>List-Watch fieldSelector</span><span>PodManager</span><span>SyncLoop</span><span>PodWorkers</span></div>
+          </div>
+          <pre class="chain-example">GET /api/v1/pods
+  ?watch=1
+  &amp;fieldSelector=spec.nodeName%3Dworker-1
+
+# kubelet 内部概念链
+config channel
+  → syncLoop
+  → podWorkers.UpdatePod
+  → syncPod
+  → volume / runtime / probe managers</pre>
+        </article>
+
+        <article class="chain-step">
+          <div class="chain-index"><b>07</b><small>storage</small></div>
+          <div class="chain-body">
+            <h3>kubelet 与 CSI 准备 Volume</h3>
+            <p>若 Pod 使用 PVC，控制面的 PV Controller/外部 Provisioner 已负责供应与绑定；必要时 Attach/Detach Controller 完成云盘挂载。节点侧 kubelet VolumeManager 通过 CSI Node Service Stage/Publish Volume，并把挂载路径注入容器配置。</p>
+            <div class="chain-interface"><span>CSI gRPC</span><span>ControllerPublishVolume</span><span>NodeStageVolume</span><span>NodePublishVolume</span></div>
+          </div>
+          <pre class="chain-example">unix:///var/lib/kubelet/plugins/
+  csi.example.com/csi.sock
+
+NodeStageVolume(
+  volume_id, staging_target_path, ...
+)
+NodePublishVolume(
+  volume_id,
+  target_path="/var/lib/kubelet/pods/.../volumes/...",
+  volume_capability, ...
+)</pre>
+        </article>
+
+        <article class="chain-step">
+          <div class="chain-index"><b>08</b><small>sandbox</small></div>
+          <div class="chain-body">
+            <h3>kubelet 通过 CRI 创建 PodSandbox 与容器</h3>
+            <p>kubelet 的 GenericRuntimeManager 调用 CRI。运行时先创建 PodSandbox（共享 network/IPC 等 namespace 的基础），再拉取镜像、创建业务容器并启动。CRI 是 protobuf/gRPC 接口，不是执行 <code>ctr</code> 或 <code>docker</code> 命令。</p>
+            <div class="chain-interface"><span>CRI v1 gRPC</span><span>RuntimeService</span><span>ImageService</span><span>Unix socket</span></div>
+          </div>
+          <pre class="chain-example">unix:///run/containerd/containerd.sock
+
+runtime.Version()
+runtime.RunPodSandbox(PodSandboxConfig)
+image.PullImage(ImageSpec)
+runtime.CreateContainer(
+  sandboxID, ContainerConfig, SandboxConfig,
+)
+runtime.StartContainer(containerID)
+
+# 运行时定期被查询 ContainerStatus / PodSandboxStatus</pre>
+        </article>
+
+        <article class="chain-step">
+          <div class="chain-index"><b>09</b><small>network</small></div>
+          <div class="chain-body">
+            <h3>CRI 实现调用 CNI 配置 Pod 网络</h3>
+            <p>containerd CRI 等实现为 Sandbox 创建 network namespace 后调用 CNI 插件链。插件通过环境变量和 stdin JSON 接收 ADD 请求，创建 veth、分配 IP、设置路由，并返回 CNI Result。具体实现可能是 bridge、Calico、Cilium 等。</p>
+            <div class="chain-interface"><span>CNI executable</span><span>stdin JSON</span><span>CNI_COMMAND=ADD</span><span>netlink / eBPF</span></div>
+          </div>
+          <pre class="chain-example">CNI_COMMAND=ADD
+CNI_CONTAINERID=&lt;sandbox-id&gt;
+CNI_NETNS=/proc/&lt;pid&gt;/ns/net
+CNI_IFNAME=eth0
+CNI_PATH=/opt/cni/bin
+
+stdin:
+{"cniVersion":"1.0.0","name":"pod-network",
+ "type":"calico", ...}
+
+result: interfaces + IPs + routes + DNS</pre>
+        </article>
+
+        <article class="chain-step">
+          <div class="chain-index"><b>10</b><small>execute</small></div>
+          <div class="chain-body">
+            <h3>containerd → shim → runc → Linux 内核</h3>
+            <p>containerd CRI 插件准备镜像 snapshot 与 OCI bundle，Runtime v2 shim 管理容器 I/O 和退出状态，再调用 runc。runc 读取 <code>config.json</code>，设置 namespaces、cgroup、mount、capabilities、seccomp，最终 <code>execve</code> nginx；runc 通常随后退出。</p>
+            <div class="chain-interface"><span>containerd API</span><span>shim ttrpc</span><span>OCI Runtime Spec</span><span>Linux syscalls / cgroupfs</span></div>
+          </div>
+          <pre class="chain-example">kubelet
+  └─ CRI gRPC → containerd CRI
+      └─ Runtime v2 → containerd-shim-runc-v2
+          └─ runc create / start
+              ├─ clone3 / setns / unshare
+              ├─ mount / pivot_root
+              ├─ cgroup v2 / seccomp
+              └─ execve(\"/usr/sbin/nginx\", ...)
+
+# 最终仍是宿主 Linux 内核调度的进程</pre>
+        </article>
+
+        <article class="chain-step">
+          <div class="chain-index"><b>11</b><small>observe</small></div>
+          <div class="chain-body">
+            <h3>状态回写、Readiness 与 Service 流量</h3>
+            <p>kubelet 从 CRI、探针和 Volume 状态汇总 PodStatus，经 <code>/status</code> 回写 apiserver。Pod Ready 后，EndpointSlice Controller 将其加入 Service 后端；kube-proxy 或 eBPF 数据面更新转发规则。业务流量不会逐包经过 apiserver、Scheduler 或 kubelet。</p>
+            <div class="chain-interface"><span>PATCH/PUT pods/{name}/status</span><span>Probe HTTP/TCP/gRPC</span><span>EndpointSlice Watch</span><span>iptables / IPVS / eBPF</span></div>
+          </div>
+          <pre class="chain-example">PATCH /api/v1/namespaces/default/
+  pods/web-7d9c-x/status
+
+status:
+  phase: Running
+  podIP: 10.244.1.23
+  containerStatuses:
+  - name: web
+    ready: true
+    state: {running: {...}}
+
+Service VIP → EndpointSlice → Pod IP:80</pre>
+        </article>
+      </div>
+
+      <div class="chain-branch">
+        <article class="branch-card"><b>控制面接力</b><p>kubectl、Controller、Scheduler 都只操作 API 对象，通过 List-Watch 异步协作。</p><code>Deployment → RS → Pod → Binding</code></article>
+        <article class="branch-card"><b>节点落地</b><p>kubelet 是 PodSpec 到节点状态的协调者，分别调用运行时、网络与存储插件。</p><code>kubelet → CRI / CSI · runtime → CNI</code></article>
+        <article class="branch-card"><b>数据面独立</b><p>容器启动后，业务请求主要走内核网络、CNI 与 Service 数据面，不经过控制面组件。</p><code>client → Service VIP → Pod IP → process</code></article>
+      </div>
+
       <div class="section-head" style="margin-top:32px">
         <div><div class="eyebrow">CRD connections</div><h2>CRD / Operator 接入原生组件的位置</h2></div>
       </div>
@@ -658,9 +1024,138 @@ GET /apis/apps.example.com/v1/namespaces/default/myapps?watch=true&resourceVersi
       </div>
     </section>
 
+    <section class="shell section" id="informer-internals">
+      <div class="section-head">
+        <div><div class="eyebrow">02 / Informer Internals</div><h2>Informer：从 List-Watch 到 Reconcile 的事件管道</h2></div>
+        <p class="section-note">Informer 不是 Watch 的别名。它在 List-Watch 之上增加自动重连、本地缓存、索引、事件分发与共享机制，是 Kubernetes Controller 的核心读模型。</p>
+      </div>
+
+      <div class="informer-pipeline" aria-label="Informer 完整数据流">
+        <div class="informer-stage"><span class="stage-num">01 · SOURCE</span><b>kube-apiserver</b><small>List 返回初始快照与 resourceVersion；Watch 返回后续增量事件。</small></div>
+        <div class="informer-stage"><span class="stage-num">02 · CONNECT</span><b>ListWatcher</b><small>封装 ListFunc / WatchFunc，指定 GVR、namespace、label/field selector。</small></div>
+        <div class="informer-stage"><span class="stage-num">03 · REFLECT</span><b>Reflector</b><small>执行 ListAndWatch；把服务端状态持续“反射”到本地 Store。</small></div>
+        <div class="informer-stage"><span class="stage-num">04 · BUFFER</span><b>DeltaFIFO</b><small>按 key 累积 Added、Updated、Deleted、Replaced、Sync 变化。</small></div>
+        <div class="informer-stage"><span class="stage-num">05 · CACHE</span><b>Indexer</b><small>保存对象最新快照，并维护 namespace 等二级索引。</small></div>
+        <div class="informer-stage"><span class="stage-num">06 · FAN-OUT</span><b>SharedProcessor</b><small>向多个 ResourceEventHandler 分发 Add、Update、Delete 通知。</small></div>
+        <div class="informer-stage"><span class="stage-num">07 · QUEUE</span><b>WorkQueue</b><small>Handler 只提取 namespace/name 入队；去重并做失败退避。</small></div>
+        <div class="informer-stage"><span class="stage-num">08 · CONSUME</span><b>Reconciler</b><small>按 key 从 Lister/Cache 读取最新对象，执行幂等状态收敛。</small></div>
+      </div>
+
+      <div class="callout"><strong>核心结论：</strong><code>List-Watch</code> 负责同步数据，<code>Informer</code> 负责缓存与事件分发，<code>WorkQueue</code> 负责调度 key，<code>Reconcile</code> 负责业务收敛。事件只是“可能需要重算”的提示，真正的事实来自缓存中的最新对象。</div>
+
+      <div class="informer-deep-grid" style="margin-top:18px">
+        <article class="informer-panel">
+          <h3>每个内部组件到底做什么</h3>
+          <div class="mechanism-list">
+            <div class="mechanism-item"><b>ListWatcher</b><p>定义如何访问某类资源。第一次 List 建立全量基线，随后 Watch 从返回的 <code>resourceVersion</code> 继续消费增量。</p></div>
+            <div class="mechanism-item"><b>Reflector</b><p>长期运行 <code>ListAndWatch</code>。Watch 正常断开会重连；版本过旧出现 <code>410 Gone</code> 时重新 List，而不是让业务控制器处理连接恢复。</p></div>
+            <div class="mechanism-item"><b>DeltaFIFO</b><p>位于 Reflector 与 Informer 处理循环之间，按对象 key 聚合一组 Deltas。它不是 Reconcile 使用的业务 WorkQueue。</p></div>
+            <div class="mechanism-item"><b>Indexer</b><p>线程安全地保存每个 key 的最新对象。Lister 只读这个本地缓存；索引让控制器可按 namespace、owner 等条件快速查找。</p></div>
+            <div class="mechanism-item"><b>Processor</b><p>SharedInformer 的 fan-out 层。一个底层 List-Watch 和 Store 可以服务多个 Handler，避免每个 Controller 都向 apiserver 建连接。</p></div>
+            <div class="mechanism-item"><b>Handler</b><p><code>AddFunc/UpdateFunc/DeleteFunc</code> 不应执行耗时业务，只负责过滤事件、生成 key 并加入 WorkQueue。</p></div>
+            <div class="mechanism-item"><b>WorkQueue</b><p>用 dirty/processing 集合合并同一 key 的事件。处理期间再次变化会在 <code>Done</code> 后重新入队，保证最终还能再对齐一次。</p></div>
+          </div>
+        </article>
+
+        <article class="informer-panel">
+          <h3>client-go 典型骨架</h3>
+          <pre class="informer-code">factory := informers.NewSharedInformerFactory(client, 30*time.Minute)
+podInformer := factory.Core().V1().Pods()
+
+podInformer.Informer().AddEventHandler(
+  cache.ResourceEventHandlerFuncs{
+    AddFunc: func(obj any) {
+      key, _ := cache.MetaNamespaceKeyFunc(obj)
+      queue.Add(key) // 只入 key，不放完整对象
+    },
+    UpdateFunc: func(oldObj, newObj any) {
+      oldPod := oldObj.(*corev1.Pod)
+      newPod := newObj.(*corev1.Pod)
+      if oldPod.ResourceVersion == newPod.ResourceVersion {
+        return // 过滤纯 resync
+      }
+      key, _ := cache.MetaNamespaceKeyFunc(newObj)
+      queue.Add(key)
+    },
+    DeleteFunc: func(obj any) {
+      // obj 可能是 DeletedFinalStateUnknown tombstone
+      key, _ := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+      queue.Add(key)
+    },
+  },
+)
+
+factory.Start(stopCh)
+if !cache.WaitForCacheSync(
+  stopCh, podInformer.Informer().HasSynced,
+) {
+  return fmt.Errorf("cache sync failed")
+}
+
+for processNextItem(queue, podInformer.Lister()) {
+  // worker: Get key → Lister 读最新对象 → 幂等处理
+}</pre>
+        </article>
+      </div>
+
+      <div class="section-head" style="margin-top:32px">
+        <div><div class="eyebrow">Failure & consistency</div><h2>重连、缓存一致性与 Resync</h2></div>
+      </div>
+      <div class="relation-grid">
+        <article class="relation-card"><h3>初始 List 与 Cache Sync</h3><p>Informer 在初始 List 对象进入 Indexer 后才算 HasSynced。Controller 应先等待 <code>WaitForCacheSync</code>，再启动 worker，避免在空缓存上误删资源。</p><span class="relation">List snapshot → Replace Delta → Indexer → HasSynced=true</span></article>
+        <article class="relation-card"><h3>Watch 断开与 410 Gone</h3><p>Watch 是长连接但不是永久连接。Reflector 自动重试；若 resourceVersion 已从服务端历史窗口淘汰，则重新 List 建立新基线。</p><span class="relation">watch closed → retry · RV expired → relist</span></article>
+        <article class="relation-card"><h3>Resync 不是重新 List</h3><p>Resync 周期通常是把本地 Store 中的对象重新产生 <code>Sync</code> 通知，给控制器一次重新检查机会；它不等于定时访问 apiserver 全量 List。</p><span class="relation">local cache → synthetic Sync event → handler</span></article>
+        <article class="relation-card"><h3>缓存是最终一致</h3><p>写请求直达 apiserver，而下一次 cache Get 可能短暂读到旧版本。逻辑应幂等，并通过 resourceVersion、Patch/重试处理冲突。</p><span class="relation">write API → watch propagation delay → cache catches up</span></article>
+        <article class="relation-card"><h3>Delete Tombstone</h3><p>如果 Delete 事件到达时缓存里已没有对象，Handler 可能收到 <code>DeletedFinalStateUnknown</code>，必须用安全函数提取 key。</p><span class="relation">DeletionHandlingMetaNamespaceKeyFunc(obj)</span></article>
+        <article class="relation-card"><h3>SharedInformerFactory</h3><p>同一资源类型共享 Reflector、DeltaFIFO 和 Indexer；多个 Controller/Handler 共享缓存，减少 apiserver 连接数和内存复制。</p><span class="relation">one List-Watch → one cache → many handlers</span></article>
+      </div>
+
+      <div class="section-head" style="margin-top:32px">
+        <div><div class="eyebrow">controller-runtime mapping</div><h2>在 Kubebuilder 中这些组件藏在哪里</h2></div>
+      </div>
+      <div class="informer-deep-grid">
+        <article class="informer-panel">
+          <div class="mechanism-list">
+            <div class="mechanism-item"><b>Manager</b><p>统一创建 Cache、Client、Controller、Webhook，并在选主成功后启动 Informer 与 worker。</p></div>
+            <div class="mechanism-item"><b>Cache</b><p>底层为每种被 Watch 的 GVK 创建/复用 Informer。默认 <code>client.Get/List</code> 对缓存类型从这里读取。</p></div>
+            <div class="mechanism-item"><b>For / Owns</b><p><code>For(&MyApp{})</code> Watch 主资源；<code>Owns(&Deployment{})</code> Watch 子资源，并通过 OwnerReference 映射回 CR 的 Reconcile key。</p></div>
+            <div class="mechanism-item"><b>APIReader</b><p>绕过 Cache 直接读取 apiserver，适合确实需要最新值的少数路径；不应成为默认读法，否则失去 Informer 的减压作用。</p></div>
+          </div>
+        </article>
+        <article class="informer-panel">
+          <pre class="informer-code">func (r *MyAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
+  return ctrl.NewControllerManagedBy(mgr).
+    For(&appv1.MyApp{}).      // 主 CR Informer
+    Owns(&appsv1.Deployment{}). // 子资源事件映射回 owner
+    Complete(r)
+}
+
+func (r *MyAppReconciler) Reconcile(
+  ctx context.Context, req ctrl.Request,
+) (ctrl.Result, error) {
+  var app appv1.MyApp
+  // 默认走 Manager Cache；事件只给 key，这里读最新快照
+  if err := r.Get(ctx, req.NamespacedName, &app); err != nil {
+    return ctrl.Result{}, client.IgnoreNotFound(err)
+  }
+  return r.reconcileDesiredState(ctx, &app)
+}</pre>
+        </article>
+      </div>
+
+      <div class="pitfall-grid">
+        <article class="pitfall"><b>误区 1：Informer 就是 Watch</b><p>Watch 只有增量流；Informer 还负责初始 List、恢复、缓存、索引和 fan-out。</p></article>
+        <article class="pitfall"><b>误区 2：事件必须逐条处理</b><p>事件可能合并或重复。Controller 应读取最新状态做 level-triggered 收敛。</p></article>
+        <article class="pitfall"><b>误区 3：DeltaFIFO 等于 WorkQueue</b><p>前者服务 Informer 缓存更新；后者服务业务 Reconcile 调度。</p></article>
+        <article class="pitfall"><b>误区 4：Resync 会重新请求全量数据</b><p>典型 Resync 是本地缓存产生 Sync 通知，不是定时 Relist。</p></article>
+        <article class="pitfall"><b>误区 5：Cache Get 是强一致读</b><p>它是 Watch 驱动的最终一致缓存，写后立即读可能短暂落后。</p></article>
+        <article class="pitfall"><b>误区 6：Handler 中直接执行业务</b><p>Handler 应快速入队；耗时与重试逻辑放在 worker/Reconcile。</p></article>
+      </div>
+    </section>
+
     <section class="shell section" id="lifecycle">
       <div class="section-head">
-        <div><div class="eyebrow">03 / Lifecycle</div><h2>从 <code>apply CR</code> 到 Reconcile 的 12 步</h2></div>
+        <div><div class="eyebrow">04 / Lifecycle</div><h2>从 <code>apply CR</code> 到 Reconcile 的 12 步</h2></div>
         <p class="section-note">CRD 必须先 Established；Operator 通常与 CR 并行部署。删除路径涉及 finalizer 与 garbage collection。</p>
       </div>
       <div class="command-compare">
@@ -703,7 +1198,7 @@ GET /apis/apps.example.com/v1/namespaces/default/myapps?watch=true&resourceVersi
 
     <section class="shell section" id="interfaces">
       <div class="section-head">
-        <div><div class="eyebrow">04 / Interface Catalog</div><h2>跨层接口目录</h2></div>
+        <div><div class="eyebrow">05 / Interface Catalog</div><h2>跨层接口目录</h2></div>
         <p class="section-note">可按协议、对象或关键词筛选。Webhook 路径与证书因项目而异。</p>
       </div>
       <div class="toolbar">
@@ -739,7 +1234,7 @@ GET /apis/apps.example.com/v1/namespaces/default/myapps?watch=true&resourceVersi
 
     <section class="shell section" id="interview">
       <div class="section-head">
-        <div><div class="eyebrow">05 / Interview Essentials</div><h2>CRD / Operator 与 K8s 高频面试题</h2></div>
+        <div><div class="eyebrow">06 / Interview Essentials</div><h2>CRD / Operator 与 K8s 高频面试题</h2></div>
         <p class="section-note">先给 30 秒结论，再讲机制与边界。点击题目展开参考答案。</p>
       </div>
       <div class="interview-tip">
@@ -768,8 +1263,8 @@ GET /apis/apps.example.com/v1/namespaces/default/myapps?watch=true&resourceVersi
           <div class="answer"><p>同一对象会多次入队（重试、resync、子资源变化）。Reconcile 应基于<strong>当前 spec</strong> 对齐世界状态，而不是假设「只处理一次 CREATE 事件」。</p><p class="key">Edge-triggered 易丢状态；level-triggered + workqueue 是 Kubernetes 控制器标准模式。</p></div>
         </details>
         <details class="qa">
-          <summary><span class="q-num">Q06</span>Informer 和直接 List Watch 有什么区别？</summary>
-          <div class="answer"><p>Informer = Reflector（List+Watch）+ 本地 Indexer 缓存 + 事件分发。Reconcile 从 cache 读，降低 apiserver 压力并保证同进程内读一致。</p><p class="key">cache 可能略滞后于 etcd；需要强一致读时用 API 直接 Get（仍经 apiserver）。</p></div>
+          <summary><span class="q-num">Q06</span>Informer 和直接 List-Watch 有什么区别？</summary>
+          <div class="answer"><p>Informer = Reflector（List-Watch）+ DeltaFIFO + Indexer 本地缓存 + 事件分发。Reconcile 从 cache 读，降低 apiserver 压力，并让多个 Handler 共享同一份对象快照。</p><p class="key">cache 是最终一致的；在 controller-runtime 中确需绕过缓存时使用 APIReader 直接读取 apiserver。</p></div>
         </details>
         <details class="qa">
           <summary><span class="q-num">Q07</span>WorkQueue 如何防止 Reconcile 风暴？</summary>
@@ -856,7 +1351,7 @@ GET /apis/apps.example.com/v1/namespaces/default/myapps?watch=true&resourceVersi
 
     <section class="shell section" id="history">
       <div class="section-head">
-        <div><div class="eyebrow">06 / Toolchain & Evolution</div><h2>从 client-go Sample 到 Kubebuilder</h2></div>
+        <div><div class="eyebrow">07 / Toolchain & Evolution</div><h2>从 client-go Sample 到 Kubebuilder</h2></div>
       </div>
       <div class="history">
         <p class="section-note" style="max-width:900px">CRD 机制随 Kubernetes 版本演进：apiextensions v1beta1 已废弃；structural schema、CEL、SSA 成为默认面试考点。工具链降低样板代码，但不改变 apiserver + Reconcile 本质。</p>
@@ -881,8 +1376,15 @@ GET /apis/apps.example.com/v1/namespaces/default/myapps?watch=true&resourceVersi
     // 内容顺序：先建立 Kubernetes 整体架构，再进入 CRD 的具体实现。
     const main = document.querySelector("main");
     const k8sInternals = document.getElementById("k8s-internals");
+    const informerInternals = document.getElementById("informer-internals");
     const crdArchitecture = document.getElementById("architecture");
     main.insertBefore(k8sInternals, crdArchitecture);
+    main.insertBefore(informerInternals, crdArchitecture);
+    if (location.hash) {
+      requestAnimationFrame(() => requestAnimationFrame(
+        () => document.querySelector(location.hash)?.scrollIntoView()
+      ));
+    }
 
     // 面试题同样先展示 Kubernetes 架构题，再展示 CRD / Operator 实现题。
     const interviewGrid = document.querySelector("#interview .interview-grid");
