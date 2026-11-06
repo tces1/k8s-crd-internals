@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Kubernetes CRD 从 kubectl 到 etcd、Informer 与 Reconcile 的完整扩展开发链路。">
+  <title>K8s CRD 开发 · 全链路调用图谱</title>
+  <style>
+    :root {
+      --bg: #060a12;
+      --panel: #0a1220;
+      --panel-2: #0f1a2e;
+      --line: #1e3352;
+      --text: #eef4ff;
+      --muted: #8aa3c4;
+      --blue: #326ce5;
+      --cyan: #5eb3ff;
+      --green: #67e480;
+      --yellow: #f6c85f;
+      --orange: #ff9f5a;
+      --pink: #f778ba;
+      --purple: #b99cff;
+      --red: #ff6b73;
+      --shadow: 0 18px 55px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(50,108,229,.14), transparent 28rem),
+        radial-gradient(circle at 92% 8%, rgba(94,179,255,.1), transparent 32rem),
+        var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    button, input { font: inherit; }
+    a { color: inherit; }
+    .shell { width: min(1480px, calc(100% - 36px)); margin: auto; }
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: rgba(6,10,18,.86);
+      backdrop-filter: blur(18px);
+    }
+    .topbar-inner {
+      min-height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 750; letter-spacing: -.02em; }
+    .brand-mark {
+      width: 32px; height: 32px; display: grid; place-items: center;
+      border: 1px solid rgba(50,108,229,.5); border-radius: 9px;
+      color: var(--cyan); background: rgba(50,108,229,.12);
+      font-size: 15px;
+    }
+    nav { display: flex; flex-wrap: wrap; gap: 18px; color: var(--muted); font-size: 13px; }
+    nav a { text-decoration: none; }
+    nav a:hover { color: var(--text); }
+    .hero { padding: 78px 0 45px; display: grid; grid-template-columns: 1.25fr .75fr; gap: 42px; align-items: end; }
+    .eyebrow { color: var(--cyan); font: 700 12px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .15em; text-transform: uppercase; }
+    h1 { max-width: 900px; margin: 16px 0 18px; font-size: clamp(40px, 6vw, 82px); line-height: .98; letter-spacing: -.065em; }
+    h1 span { color: transparent; -webkit-text-stroke: 1px rgba(238,244,255,.55); }
+    .lead { max-width: 760px; margin: 0; color: #a8bdd8; font-size: clamp(16px, 1.7vw, 20px); }
+    .hero-stats { display: grid; grid-template-columns: repeat(2, 1fr); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+    .stat { padding: 23px; background: rgba(10,18,32,.78); }
+    .stat:nth-child(odd) { border-right: 1px solid var(--line); }
+    .stat:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+    .stat strong { display: block; font-size: 29px; letter-spacing: -.04em; }
+    .stat small { color: var(--muted); }
+    .section { padding: 46px 0; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 30px; margin-bottom: 24px; }
+    h2 { margin: 7px 0 0; font-size: clamp(28px, 3vw, 42px); letter-spacing: -.04em; line-height: 1.1; }
+    .section-note { max-width: 520px; margin: 0; color: var(--muted); font-size: 14px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    .pill, .chip {
+      display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line);
+      border-radius: 999px; color: var(--muted); background: rgba(15,26,46,.72);
+    }
+    .pill { padding: 6px 10px; font-size: 12px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .architecture {
+      display: grid; grid-template-columns: minmax(0, 1fr) 355px; gap: 18px; align-items: start;
+    }
+    .stack { position: relative; display: grid; gap: 10px; }
+    .layer {
+      display: grid; grid-template-columns: 115px 1fr; gap: 15px;
+      border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+      background: linear-gradient(110deg, rgba(15,26,46,.95), rgba(8,14,26,.85));
+      transition: border-color .2s, transform .2s;
+    }
+    .layer:hover { border-color: #2a4570; transform: translateX(2px); }
+    .layer-label {
+      padding: 19px 14px; display: flex; flex-direction: column; justify-content: center;
+      border-right: 1px solid var(--line); color: var(--muted); font: 650 11px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: .07em; text-transform: uppercase;
+    }
+    .layer-label b { margin-bottom: 3px; color: var(--text); font-size: 19px; letter-spacing: -.04em; }
+    .nodes { padding: 13px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 9px; }
+    .node {
+      position: relative; min-height: 74px; padding: 13px 14px; text-align: left; color: var(--text);
+      border: 1px solid var(--line); border-radius: 11px; background: #081018; cursor: pointer;
+      transition: .18s ease; overflow: hidden;
+    }
+    .node::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--accent, var(--blue)); }
+    .node:hover, .node.active { border-color: var(--accent, var(--blue)); background: color-mix(in srgb, var(--accent, var(--blue)) 8%, #081018); }
+    .node strong { display: block; font-size: 14px; line-height: 1.3; }
+    .node small { display: block; margin-top: 5px; color: var(--muted); font: 11px/1.25 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .interface-strip { position: relative; color: var(--cyan); font: 650 11px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .interface-strip::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: rgba(94,179,255,.5); z-index: -1; }
+    .interface-strip summary { min-height: 29px; display: flex; align-items: center; justify-content: center; cursor: pointer; list-style: none; }
+    .interface-strip summary::-webkit-details-marker { display: none; }
+    .interface-strip summary span {
+      padding: 4px 10px; border: 1px solid rgba(94,179,255,.35); border-radius: 999px; background: var(--bg); z-index: 1;
+    }
+    .interface-strip summary span::after { content: "  ＋ 展开例子"; color: var(--muted); font-size: 9px; }
+    .interface-strip[open] summary span::after { content: "  − 收起"; }
+    .wire-example {
+      position: relative; z-index: 2; margin: 5px 0 10px; padding: 18px; color: var(--text);
+      border: 1px solid rgba(94,179,255,.28); border-radius: 13px; background: #060d18; box-shadow: 0 15px 35px rgba(0,0,0,.28);
+    }
+    .wire-title { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; margin-bottom: 13px; }
+    .wire-title strong { font-size: 15px; }
+    .wire-title small { color: var(--muted); font: 10px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .protocol-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    .protocol-fact { padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(15,26,46,.62); }
+    .protocol-fact b { display: block; margin-bottom: 3px; color: var(--cyan); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+    .protocol-fact span { color: #b8c9d3; font-size: 11px; }
+    .wire-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 11px 0; color: #b8c9d3; font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .wire-flow i { color: var(--cyan); font-style: normal; }
+    .code-sample {
+      margin: 9px 0 0; padding: 13px; overflow-x: auto; white-space: pre; color: #c8e4ff;
+      border: 1px solid #1e3352; border-radius: 8px; background: #030810; font: 10px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .wire-note { margin: 10px 0 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .detail {
+      position: sticky; top: 80px; min-height: 430px; padding: 24px;
+      border: 1px solid var(--line); border-radius: var(--radius);
+      background: rgba(10,18,32,.92); box-shadow: var(--shadow);
+    }
+    .detail-kicker { color: var(--cyan); font: 700 11px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; letter-spacing: .12em; }
+    .detail h3 { margin: 10px 0 5px; font-size: 25px; letter-spacing: -.03em; }
+    .detail .alias { color: var(--yellow); font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .detail p { color: #a8bdd8; font-size: 14px; }
+    .detail dl { margin: 20px 0 0; }
+    .detail dt { margin-top: 15px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; }
+    .detail dd { margin: 4px 0 0; color: var(--text); font-size: 13px; }
+    code { color: #b6d4ff; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .callout {
+      margin-top: 18px; padding: 14px; border-left: 3px solid var(--yellow);
+      border-radius: 0 9px 9px 0; color: #cfdae1; background: rgba(246,200,95,.07); font-size: 13px;
+    }
+    .flow-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 18px; }
+    .command-card, .flow-card, .catalog, .history {
+      border: 1px solid var(--line); border-radius: var(--radius); background: rgba(10,18,32,.8); box-shadow: var(--shadow);
+    }
+    .command-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+    .compare-card {
+      position: relative; padding: 21px; border: 1px solid var(--line); border-radius: 13px;
+      background: linear-gradient(120deg, rgba(15,26,46,.95), rgba(6,12,22,.9)); overflow: hidden;
+    }
+    .compare-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--accent); }
+    .compare-card h3 { margin: 5px 0 8px; font-size: 21px; letter-spacing: -.03em; }
+    .compare-card p { margin: 0; color: #a8bdd8; font-size: 13px; }
+    .compare-card .state { display: inline-flex; margin-top: 13px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--accent); font: 650 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .equation {
+      grid-column: 1 / -1; padding: 12px 16px; text-align: center; border: 1px dashed #2a4570;
+      border-radius: 11px; color: var(--muted); background: rgba(6,10,18,.65); font-size: 13px;
+    }
+    .equation strong { color: var(--cyan); }
+    .command-card { padding: 25px; }
+    .terminal { margin-top: 20px; padding: 17px; border: 1px solid #1e3352; border-radius: 11px; background: #030810; color: var(--green); font: 13px/1.65 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-x: auto; }
+    .terminal .dim { color: #617584; }
+    .flow-card { padding: 13px; }
+    .step {
+      display: grid; grid-template-columns: 42px 1fr auto; gap: 13px; align-items: center;
+      min-height: 67px; padding: 10px 13px; border-radius: 10px;
+    }
+    .step + .step { border-top: 1px solid rgba(30,51,82,.65); }
+    .step-num { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: var(--cyan); font: 700 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .step strong { display: block; font-size: 14px; }
+    .step small { color: var(--muted); }
+    .step code { padding: 4px 7px; border-radius: 6px; background: #060a12; font-size: 11px; }
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .search {
+      flex: 1; min-width: 170px; padding: 11px 13px; outline: none; color: var(--text);
+      border: 1px solid var(--line); border-radius: 10px; background: #081018;
+    }
+    .search:focus { border-color: var(--blue); }
+    .chip { padding: 8px 11px; cursor: pointer; }
+    .chip.active { color: #061018; border-color: var(--cyan); background: var(--cyan); }
+    .catalog { overflow: hidden; }
+    .catalog-row {
+      display: grid; grid-template-columns: 1.05fr .8fr 1.6fr 1.5fr; gap: 15px; align-items: start;
+      padding: 17px 20px; border-top: 1px solid var(--line); font-size: 13px;
+    }
+    .catalog-row:first-child { border-top: 0; }
+    .catalog-row.header { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; background: rgba(8,14,26,.6); }
+    .catalog-row.hidden { display: none; }
+    .catalog-row .tag { display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: 4px; background: rgba(50,108,229,.2); color: var(--cyan); font: 650 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .empty { display: none; padding: 40px; text-align: center; color: var(--muted); }
+    .interview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .qa { border: 1px solid var(--line); border-radius: 13px; background: rgba(10,18,32,.75); overflow: hidden; }
+    .qa summary { padding: 16px 18px; cursor: pointer; list-style: none; font-weight: 650; font-size: 14px; }
+    .qa summary::-webkit-details-marker { display: none; }
+    .q-num { display: inline-block; margin-right: 10px; padding: 2px 8px; border-radius: 6px; color: var(--cyan); background: rgba(94,179,255,.12); font: 700 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .qa .answer { padding: 0 18px 18px; border-top: 1px solid rgba(30,51,82,.5); color: #a8bdd8; font-size: 13px; }
+    .qa .answer p { margin: 12px 0 0; }
+    .qa .key { margin-top: 10px; padding: 10px 12px; border-left: 2px solid var(--blue); border-radius: 0 8px 8px 0; background: rgba(50,108,229,.08); color: var(--text); }
+    .interview-tip {
+      margin-bottom: 18px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 13px;
+      background: rgba(15,26,46,.55);
+    }
+    .interview-tip b { color: var(--cyan); }
+    .interview-tip p { margin: 0; color: #a8bdd8; font-size: 13px; }
+    .k8s-overview { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .component-zone {
+      padding: 22px; border: 1px solid var(--line); border-radius: var(--radius);
+      background: rgba(10,18,32,.8); box-shadow: var(--shadow);
+    }
+    .zone-head { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; margin-bottom: 15px; }
+    .zone-head h3 { margin: 0; font-size: 21px; letter-spacing: -.03em; }
+    .zone-head code { color: var(--muted); font-size: 10px; }
+    .component-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .component-card {
+      position: relative; min-height: 132px; padding: 16px; overflow: hidden;
+      border: 1px solid var(--line); border-radius: 11px; background: rgba(6,13,24,.9);
+    }
+    .component-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--accent, var(--blue)); }
+    .component-card b { display: block; margin-bottom: 5px; font-size: 14px; }
+    .component-card code { display: block; margin-bottom: 9px; color: var(--accent, var(--cyan)); font-size: 10px; }
+    .component-card p { margin: 0; color: #a8bdd8; font-size: 12px; line-height: 1.55; }
+    .component-card .edge { display: block; margin-top: 10px; color: var(--muted); font: 10px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .call-path {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 18px; margin: 18px 0;
+      padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(10,18,32,.72);
+    }
+    .path-node {
+      position: relative; min-height: 88px; padding: 13px; text-align: center;
+      border: 1px solid var(--line); border-radius: 10px; background: #060d18;
+    }
+    .path-node:not(:last-child)::after {
+      content: "→"; position: absolute; top: 50%; right: -15px; transform: translate(50%,-50%);
+      color: var(--cyan); font-weight: 800;
+    }
+    .path-node b { display: block; color: var(--text); font-size: 12px; }
+    .path-node small { display: block; margin-top: 6px; color: var(--muted); font-size: 10px; }
+    .relation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .relation-card {
+      padding: 17px; border: 1px solid var(--line); border-radius: 12px;
+      background: linear-gradient(125deg, rgba(15,26,46,.9), rgba(6,12,22,.85));
+    }
+    .relation-card h3 { margin: 0 0 8px; font-size: 15px; }
+    .relation-card p { margin: 0; color: #a8bdd8; font-size: 12px; }
+    .relation-card .relation {
+      display: block; margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--line);
+      color: var(--cyan); font: 10px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .history { padding: 26px; }
+    .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 20px; }
+    .era { padding: 18px; border: 1px solid var(--line); border-radius: 13px; background: rgba(8,14,26,.7); }
+    .era time { color: var(--cyan); font: 650 11px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .era h3 { margin: 10px 0 8px; font-size: 17px; }
+    .era p { margin: 0; color: var(--muted); font-size: 13px; }
+    footer { margin-top: 40px; padding: 28px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    @media (max-width: 1050px) {
+      .hero, .architecture, .flow-grid, .command-compare, .timeline, .k8s-overview { grid-template-columns: 1fr; }
+      .detail { position: static; min-height: auto; }
+      nav { display: none; }
+      .protocol-grid { grid-template-columns: 1fr; }
+      .catalog-row { grid-template-columns: 1fr; gap: 8px; }
+      .interview-grid { grid-template-columns: 1fr; }
+      .call-path { grid-template-columns: repeat(2, 1fr); }
+      .path-node:not(:last-child)::after { display: none; }
+      .relation-grid { grid-template-columns: 1fr; }
+      .footer-inner { flex-direction: column; }
+    }
+    @media (max-width: 620px) {
+      .component-grid, .call-path { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <div class="brand"><span class="brand-mark">⎈</span> K8s CRD Internals</div>
+      <nav aria-label="页面导航">
+        <a href="#architecture">CRD 架构</a>
+        <a href="#k8s-internals">K8s 内部组件</a>
+        <a href="#lifecycle">Reconcile 链路</a>
+        <a href="#interfaces">接口目录</a>
+        <a href="#interview">高频面试题</a>
+        <a href="#history">演进与工具链</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="shell hero">
+      <div>
+        <div class="eyebrow">From manifest to reconcile</div>
+        <h1>Kubernetes CRD<br><span>扩展开发调用图谱</span></h1>
+        <p class="lead">一次 <code>kubectl apply</code> 自定义资源，如何穿过 REST、OpenAPI 结构校验、etcd 持久化、List-Watch/Informer，最终进入 Controller 的 level-triggered Reconcile 循环，并关联 Kubernetes 控制面与节点组件。</p>
+      </div>
+      <div class="hero-stats" aria-label="架构统计">
+        <div class="stat"><strong>7</strong><small>逻辑层级</small></div>
+        <div class="stat"><strong>22+</strong><small>关键接口</small></div>
+        <div class="stat"><strong>3</strong><small>核心对象 CRD·CR·Controller</small></div>
+        <div class="stat"><strong>∞</strong><small>可重入 Reconcile</small></div>
+      </div>
+    </section>
+
+    <section class="shell section" id="architecture">
+      <div class="section-head">
+        <div><div class="eyebrow">01 / Architecture</div><h2>点击组件，查看它在 CRD 链路中的边界</h2></div>
+        <p class="section-note">主链展示「声明 CRD → 用户提交 CR → Operator 收敛」的标准路径。API Aggregation 与 CRD 是两条不同的扩展 API 机制。</p>
+      </div>
+      <div class="legend">
+        <span class="pill" style="color:var(--blue)"><i class="dot"></i>用户 / 客户端</span>
+        <span class="pill" style="color:var(--cyan)"><i class="dot"></i>控制面</span>
+        <span class="pill" style="color:var(--yellow)"><i class="dot"></i>准入与 schema</span>
+        <span class="pill" style="color:var(--green)"><i class="dot"></i>存储与 watch</span>
+        <span class="pill" style="color:var(--pink)"><i class="dot"></i>Operator 运行时</span>
+      </div>
+      <div class="architecture">
+        <div class="stack">
+          <div class="layer">
+            <div class="layer-label"><b>01</b>客户端层</div>
+            <div class="nodes">
+              <button class="node active" style="--accent:var(--blue)" data-node="kubectl"><strong>kubectl</strong><small>apply · get · patch</small></button>
+              <button class="node" style="--accent:var(--blue)" data-node="client"><strong>client-go / controller-runtime</strong><small>typed · dynamic client</small></button>
+              <button class="node" style="--accent:var(--blue)" data-node="codegen"><strong>kubebuilder / controller-gen</strong><small>CRD YAML · Go types</small></button>
+            </div>
+          </div>
+          <details class="interface-strip">
+            <summary><span>Kubernetes API · HTTPS · JSON / Protobuf</span></summary>
+            <div class="wire-example">
+              <div class="wire-title"><strong>例：kubectl 创建自定义资源实例</strong><small>REST 资源 URL 由 Group/Version/Resource 决定</small></div>
+              <div class="protocol-grid">
+                <div class="protocol-fact"><b>调用方</b><span>kubectl、client-go、controller</span></div>
+                <div class="protocol-fact"><b>服务方</b><span>kube-apiserver</span></div>
+                <div class="protocol-fact"><b>鉴权</b><span>RBAC + 可选 Webhook / SAR</span></div>
+              </div>
+              <div class="wire-flow"><span>kubectl</span><i>→ POST /apis/apps.example.com/v1/namespaces/default/myapps →</i><span>apiserver</span></div>
+              <pre class="code-sample"># 1. 先注册 CRD（集群级）
+kubectl apply -f crd-myapps.apps.example.com.yaml
+
+# 2. 再创建 CR 实例
+kubectl apply -f - &lt;&lt;'EOF'
+apiVersion: apps.example.com/v1
+kind: MyApp
+metadata:
+  name: demo
+  namespace: default
+spec:
+  replicas: 3
+  image: nginx:1.27
+EOF
+
+# REST 等价路径（namespace 作用域）
+POST /apis/apps.example.com/v1/namespaces/default/myapps
+Content-Type: application/json</pre>
+              <p class="wire-note"><strong>GVK</strong>（Group/Version/Kind）写在 manifest；<strong>GVR</strong>（Group/Version/Resource）决定 URL 路径。CRD 的 <code>spec.names.plural</code> 定义 resource 名。</p>
+            </div>
+          </details>
+          <div class="layer">
+            <div class="layer-label"><b>02</b>API 层</div>
+            <div class="nodes">
+              <button class="node" style="--accent:var(--cyan)" data-node="apiserver"><strong>kube-apiserver</strong><small>REST · discovery</small></button>
+              <button class="node" style="--accent:var(--cyan)" data-node="crdhandler"><strong>CRD REST Handler</strong><small>dynamic REST storage</small></button>
+              <button class="node" style="--accent:var(--pink)" data-node="aggregation"><strong>API Aggregation</strong><small>APIService · 旁路</small></button>
+            </div>
+          </div>
+          <details class="interface-strip" open>
+            <summary><span>CRD 注册 · apiextensions.k8s.io/v1</span></summary>
+            <div class="wire-example">
+              <div class="wire-title"><strong>例：apiserver 加载 CRD 并暴露新 REST 路径</strong><small>Established=True 后客户端才能稳定使用</small></div>
+              <div class="protocol-grid">
+                <div class="protocol-fact"><b>CRD 对象</b><span><code>CustomResourceDefinition</code>，集群级</span></div>
+                <div class="protocol-fact"><b>版本策略</b><span><code>spec.versions[]</code>、storage 版本、served 版本</span></div>
+                <div class="protocol-fact"><b>条件</b><span><code>Established</code>、<code>NamesAccepted</code></span></div>
+              </div>
+              <pre class="code-sample">apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: myapps.apps.example.com   # &lt;plural&gt;.&lt;group&gt;
+spec:
+  group: apps.example.com
+  scope: Namespaced
+  names:
+    kind: MyApp
+    plural: myapps
+    singular: myapp
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              replicas: { type: integer, minimum: 0 }
+    subresources:
+      status: {}</pre>
+              <p class="wire-note">CRD 控制器（内置于 apiextensions）负责校验 schema、更新 OpenAPI 发布、注册 REST 路由。多版本时可能还需要 <strong>Conversion Webhook</strong> 在读写间转换。</p>
+            </div>
+          </details>
+          <div class="layer">
+            <div class="layer-label"><b>03</b>Schema 层</div>
+            <div class="nodes">
+              <button class="node" style="--accent:var(--yellow)" data-node="openapi"><strong>OpenAPI v3 Schema</strong><small>structural · CEL</small></button>
+              <button class="node" style="--accent:var(--yellow)" data-node="defaulting"><strong>Defaulting</strong><small>CRD default · webhook</small></button>
+              <button class="node" style="--accent:var(--yellow)" data-node="subresource"><strong>Subresources</strong><small>/status · /scale</small></button>
+            </div>
+          </div>
+          <details class="interface-strip">
+            <summary><span>Structural Schema · 拒绝非结构字段</span></summary>
+            <div class="wire-example">
+              <div class="wire-title"><strong>例：结构约束与 CEL 规则</strong><small>v1 CRD 默认 structural；未知字段可能被拒绝</small></div>
+              <pre class="code-sample"># CEL 校验（Kubernetes 1.25+ 常见面试点）
+validation:
+  openAPIV3Schema:
+    type: object
+    properties:
+      spec:
+        type: object
+        x-kubernetes-validations:
+        - rule: "self.replicas &lt;= 100"
+          message: "replicas must be &lt;= 100"
+        properties:
+          replicas: { type: integer }
+
+# status 子资源：spec 与 status 分离更新
+# PATCH /apis/.../myapps/demo/status  仅更新 status
+# 需 RBAC: myapps/status</pre>
+              <p class="wire-note"><strong>spec</strong> 表达期望状态，由用户/上层控制器写入；<strong>status</strong> 表达观测状态，通常仅 Operator 写入。分离可避免用户 patch 与控制器 patch 冲突。</p>
+            </div>
+          </details>
+          <div class="layer">
+            <div class="layer-label"><b>04</b>准入层</div>
+            <div class="nodes">
+              <button class="node" style="--accent:var(--yellow)" data-node="admission"><strong>Admission Chain</strong><small>mutating → validating</small></button>
+              <button class="node" style="--accent:var(--yellow)" data-node="webhooks"><strong>Admission Webhooks</strong><small>TLS · timeout</small></button>
+            </div>
+          </div>
+          <details class="interface-strip">
+            <summary><span>AdmissionReview · JSON over HTTPS</span></summary>
+            <div class="wire-example">
+              <div class="wire-title"><strong>例：Validating Webhook 拒绝非法 CR</strong><small>在持久化 etcd 之前执行</small></div>
+              <div class="wire-flow"><span>apiserver</span><i>→ POST /validate →</i><span>webhook pod</span><i>→ allowed/denied</i></div>
+              <pre class="code-sample"># ValidatingWebhookConfiguration（节选）
+webhooks:
+- name: vmyapp.kb.io
+  rules:
+  - apiGroups: ["apps.example.com"]
+    apiVersions: ["v1"]
+    operations: ["CREATE", "UPDATE"]
+    resources: ["myapps"]
+  clientConfig:
+    service:
+      namespace: system
+      name: webhook-service
+      path: /validate-apps-example-com-v1-myapp
+  failurePolicy: Fail   # 或 Ignore（生产慎用）
+
+# Webhook 收到 AdmissionReview，返回 patch 或 allowed</pre>
+              <p class="wire-note">Mutating Webhook 可设置默认值或注入 sidecar 元数据；Validating 只做校验。CRD 自带 OpenAPI 校验与 Webhook 是<strong>叠加</strong>关系，不是二选一。</p>
+            </div>
+          </details>
+          <div class="layer">
+            <div class="layer-label"><b>05</b>存储层</div>
+            <div class="nodes">
+              <button class="node" style="--accent:var(--green)" data-node="etcd"><strong>etcd</strong><small>key-value · MVCC</small></button>
+              <button class="node" style="--accent:var(--green)" data-node="watch"><strong>List-Watch</strong><small>resourceVersion</small></button>
+            </div>
+          </div>
+          <details class="interface-strip">
+            <summary><span>etcd key · /registry/... · watch stream</span></summary>
+            <div class="wire-example">
+              <div class="wire-title"><strong>例：CR 持久化与控制器 Watch</strong><small>apiserver 是 etcd 的唯一网关</small></div>
+              <pre class="code-sample"># 概念化 key（简化）
+/registry/apps.example.com/myapps/default/demo
+
+# List + Watch（client-go / informer）
+GET /apis/apps.example.com/v1/namespaces/default/myapps?watch=true&resourceVersion=12345
+
+# 每条事件：ADDED / MODIFIED / DELETED
+# resourceVersion 单调递增，用于 resume 与乐观并发</pre>
+              <p class="wire-note">Controller 不应直接连 etcd。所有读写经 apiserver，才能统一鉴权、准入、审计与版本转换。</p>
+            </div>
+          </details>
+          <div class="layer">
+            <div class="layer-label"><b>06</b>控制器层</div>
+            <div class="nodes">
+              <button class="node" style="--accent:var(--pink)" data-node="informer"><strong>Informer / Cache</strong><small>Indexer · Lister</small></button>
+              <button class="node" style="--accent:var(--pink)" data-node="workqueue"><strong>WorkQueue</strong><small>rate limit · dedupe</small></button>
+              <button class="node" style="--accent:var(--pink)" data-node="reconciler"><strong>Reconciler</strong><small>level-triggered</small></button>
+              <button class="node" style="--accent:var(--pink)" data-node="manager"><strong>Manager</strong><small>leader election · metrics</small></button>
+            </div>
+          </div>
+          <details class="interface-strip">
+            <summary><span>Reconcile(Request) → Result · error</span></summary>
+            <div class="wire-example">
+              <div class="wire-title"><strong>例：controller-runtime Reconcile 骨架</strong><small>幂等、可重入；错误应 Requeue</small></div>
+              <pre class="code-sample">func (r *MyAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+    var app myappv1.MyApp
+    if err := r.Get(ctx, req.NamespacedName, &app); err != nil {
+        return ctrl.Result{}, client.IgnoreNotFound(err)
+    }
+    // 读 spec，创建/更新 Deployment 等子资源
+    dep := deploymentFor(&app)
+    if err := controllerutil.SetControllerReference(&app, dep, r.Scheme); err != nil {
+        return ctrl.Result{}, err
+    }
+    // CreateOrUpdate ...
+    app.Status.ReadyReplicas = ...
+    return ctrl.Result{RequeueAfter: time.Minute}, r.Status().Update(ctx, &app)
+}</pre>
+              <p class="wire-note">WorkQueue 按 <code>namespace/name</code> 去重；Informer 事件风暴时仍只触发有限次 Reconcile。<strong>Level-triggered</strong>：反复对齐当前 spec，而非假设「只处理一次 ADD」。</p>
+            </div>
+          </details>
+          <div class="layer">
+            <div class="layer-label"><b>07</b>落地层</div>
+            <div class="nodes">
+              <button class="node" style="--accent:var(--red)" data-node="child"><strong>Child Resources</strong><small>Deployment · Service</small></button>
+              <button class="node" style="--accent:var(--red)" data-node="finalizer"><strong>Finalizers</strong><small>删除守卫</small></button>
+              <button class="node" style="--accent:var(--red)" data-node="owner"><strong>OwnerReference</strong><small>GC 级联</small></button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="detail" aria-live="polite">
+          <div class="detail-kicker" id="detailType">客户端 · USER-FACING</div>
+          <h3 id="detailTitle">kubectl</h3>
+          <div class="alias" id="detailAlias">kubeconfig + discovery</div>
+          <p id="detailDesc">解析 manifest，协商 API 版本，经 REST 与 apiserver 交互；本身不运行 Reconcile。</p>
+          <dl>
+            <dt>向上提供</dt><dd id="detailUp">声明式命令、表格/JSON 输出、server-side apply</dd>
+            <dt>向下调用</dt><dd id="detailDown">HTTPS REST → kube-apiserver</dd>
+            <dt>传输 / 数据</dt><dd id="detailWire">JSON 或 Protobuf；Bearer Token / cert</dd>
+            <dt>关键接口</dt><dd id="detailApi"><code>POST/PUT/PATCH</code> 自定义资源 · <code>GET /apis</code> discovery</dd>
+          </dl>
+          <div class="callout" id="detailNote">apply 使用 three-way merge / server-side apply；写 CR 时注意 fieldManager 与冲突。</div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="shell section" id="k8s-internals">
+      <div class="section-head">
+        <div><div class="eyebrow">02 / Kubernetes Internals</div><h2>Kubernetes 内部组件与 CRD 的关联</h2></div>
+        <p class="section-note">先理解原生 Kubernetes 如何把 Deployment 变成运行中的 Pod，再看 Operator 如何通过 CR 把自定义领域模型接入同一套控制环路。</p>
+      </div>
+
+      <div class="k8s-overview">
+        <article class="component-zone">
+          <div class="zone-head"><h3>Control Plane · 控制面</h3><code>维护集群期望状态</code></div>
+          <div class="component-grid">
+            <div class="component-card" style="--accent:var(--cyan)">
+              <b>kube-apiserver</b><code>REST · authn/authz · admission</code>
+              <p>所有组件的统一 API 入口，也是唯一直接访问 etcd 的核心组件。提供 List-Watch、审计和版本转换。</p>
+              <span class="edge">kubectl / controller / kubelet → apiserver → etcd</span>
+            </div>
+            <div class="component-card" style="--accent:var(--green)">
+              <b>etcd</b><code>MVCC · Raft · source of truth</code>
+              <p>持久化 Deployment、Pod、CR 等 API 对象；不运行调度或控制逻辑。</p>
+              <span class="edge">仅由 apiserver 读写；Controller 不应直连</span>
+            </div>
+            <div class="component-card" style="--accent:var(--yellow)">
+              <b>kube-scheduler</b><code>Filter → Score → Bind</code>
+              <p>Watch 未绑定 Pod，筛选并打分 Node，最终写入 <code>spec.nodeName</code>；它不启动容器。</p>
+              <span class="edge">Pending Pod → Scheduling Queue → Node binding</span>
+            </div>
+            <div class="component-card" style="--accent:var(--pink)">
+              <b>kube-controller-manager</b><code>built-in control loops</code>
+              <p>运行 Deployment、ReplicaSet、Node、EndpointSlice、Garbage Collector 等原生控制器。</p>
+              <span class="edge">期望状态 vs 观测状态 → 创建/更新 API 对象</span>
+            </div>
+            <div class="component-card" style="--accent:var(--purple)">
+              <b>cloud-controller-manager</b><code>cloud provider integration</code>
+              <p>把 Node、Route、LoadBalancer 等云资源逻辑从核心控制器中拆出。</p>
+              <span class="edge">Service type=LoadBalancer → 云负载均衡器</span>
+            </div>
+            <div class="component-card" style="--accent:var(--blue)">
+              <b>Operator / Custom Controller</b><code>CRD-specific control loop</code>
+              <p>通常以普通 Deployment/Pod 运行，不属于 Kubernetes 内置控制面；通过 API 扩展领域行为。</p>
+              <span class="edge">CR → Reconcile → Deployment / Service / 外部系统</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="component-zone">
+          <div class="zone-head"><h3>Worker Node · 节点侧</h3><code>把 PodSpec 落成进程与网络</code></div>
+          <div class="component-grid">
+            <div class="component-card" style="--accent:var(--cyan)">
+              <b>kubelet</b><code>Pod lifecycle · node agent</code>
+              <p>Watch 分配到本节点的 PodSpec，通过 CRI 驱动运行时，并调用 CNI/CSI 完成网络和存储。</p>
+              <span class="edge">apiserver → PodSpec → kubelet → CRI</span>
+            </div>
+            <div class="component-card" style="--accent:var(--yellow)">
+              <b>Container Runtime</b><code>CRI → containerd / CRI-O</code>
+              <p>拉取镜像、创建 PodSandbox 和容器；再由 shim/runc 把容器落实为 Linux 进程。</p>
+              <span class="edge">kubelet → CRI gRPC → containerd → runc</span>
+            </div>
+            <div class="component-card" style="--accent:var(--green)">
+              <b>CNI Plugin</b><code>network namespace · IP · route</code>
+              <p>为 Pod 分配 IP、连接网络并设置路由；NetworkPolicy 通常由 CNI 实现。</p>
+              <span class="edge">runtime / kubelet → CNI binary → netns</span>
+            </div>
+            <div class="component-card" style="--accent:var(--purple)">
+              <b>CSI Plugin</b><code>Controller + Node services</code>
+              <p>将存储供应、Attach、Mount 标准化；PV/PVC 控制器与节点插件协作。</p>
+              <span class="edge">PVC → PV → attach → kubelet mount</span>
+            </div>
+            <div class="component-card" style="--accent:var(--pink)">
+              <b>kube-proxy / eBPF dataplane</b><code>Service VIP · load balancing</code>
+              <p>把 Service/EndpointSlice 转为 iptables、IPVS 或 eBPF 转发规则；不负责 Pod IP 分配。</p>
+              <span class="edge">Service ClusterIP → EndpointSlice backends</span>
+            </div>
+            <div class="component-card" style="--accent:var(--blue)">
+              <b>CoreDNS</b><code>Service discovery</code>
+              <p>Watch Service/EndpointSlice，为集群内工作负载提供 DNS；网络可达仍由 CNI 与数据面保证。</p>
+              <span class="edge">service.namespace.svc → ClusterIP / headless endpoints</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="callout"><strong>关键边界：</strong>Scheduler 只决定 Pod 去哪个 Node；kubelet 才负责在该 Node 启动 Pod。CNI 分配 Pod 网络；kube-proxy/eBPF 处理 Service 转发。Operator 创建 Deployment 后，后续 ReplicaSet、调度与容器启动仍由 Kubernetes 原生组件完成。</div>
+
+      <div class="section-head" style="margin-top:32px">
+        <div><div class="eyebrow">Native workload path</div><h2>Deployment 到容器进程的主链</h2></div>
+        <p class="section-note">组件主要通过 apiserver 上的声明式对象和 List-Watch 解耦，而不是彼此同步 RPC 串联。</p>
+      </div>
+      <div class="call-path" aria-label="Deployment 到容器进程调用链">
+        <div class="path-node"><b>kubectl</b><small>提交 Deployment</small></div>
+        <div class="path-node"><b>apiserver + etcd</b><small>校验并持久化</small></div>
+        <div class="path-node"><b>Deployment / RS Controller</b><small>创建 RS 与 Pod</small></div>
+        <div class="path-node"><b>Scheduler</b><small>绑定 Pod 到 Node</small></div>
+        <div class="path-node"><b>kubelet</b><small>同步 Pod 生命周期</small></div>
+        <div class="path-node"><b>CRI + CNI + CSI</b><small>容器、网络、存储</small></div>
+      </div>
+
+      <div class="section-head" style="margin-top:32px">
+        <div><div class="eyebrow">CRD connections</div><h2>CRD / Operator 接入原生组件的位置</h2></div>
+      </div>
+      <div class="relation-grid">
+        <article class="relation-card"><h3>CRD ↔ kube-apiserver</h3><p>CRD 让 apiserver 动态暴露新的 GVR；CR 与 Pod 一样经过鉴权、准入、审计和持久化。</p><span class="relation">CRD Established → REST route + OpenAPI discovery</span></article>
+        <article class="relation-card"><h3>Operator ↔ etcd</h3><p>两者没有直接连接。Operator 经 apiserver 的 List-Watch/Informer 获取 CR，写操作也必须返回 apiserver。</p><span class="relation">Operator ⇄ apiserver ⇄ etcd</span></article>
+        <article class="relation-card"><h3>Operator ↔ 原生控制器</h3><p>Operator 创建 Deployment 后，Deployment/ReplicaSet Controller 接力；通过 OwnerReference 串起 GC。</p><span class="relation">CR → Operator → Deployment → RS → Pod</span></article>
+        <article class="relation-card"><h3>Operator ↔ Scheduler</h3><p>通常没有直接调用。Operator 创建未绑定 Pod，Scheduler Watch 到后再完成节点选择。</p><span class="relation">Operator → Pod API object → Scheduler</span></article>
+        <article class="relation-card"><h3>Operator ↔ kubelet</h3><p>Operator 不应远程命令 kubelet启动容器；它写 API 对象，kubelet只处理分配到本节点的 Pod。</p><span class="relation">Operator → apiserver → PodSpec → kubelet</span></article>
+        <article class="relation-card"><h3>CR status ↔ 可观测性</h3><p>Operator 汇总子资源与外部系统状态，回写 Conditions、ReadyReplicas 和 observedGeneration。</p><span class="relation">child status/events → Reconcile → CR /status</span></article>
+      </div>
+    </section>
+
+    <section class="shell section" id="lifecycle">
+      <div class="section-head">
+        <div><div class="eyebrow">03 / Lifecycle</div><h2>从 <code>apply CR</code> 到 Reconcile 的 12 步</h2></div>
+        <p class="section-note">CRD 必须先 Established；Operator 通常与 CR 并行部署。删除路径涉及 finalizer 与 garbage collection。</p>
+      </div>
+      <div class="command-compare">
+        <article class="compare-card" style="--accent:var(--yellow)">
+          <div class="eyebrow">Register API</div>
+          <h3><code>apply CRD</code></h3>
+          <p>向集群注册 GVK/GVR、OpenAPI schema、子资源与 conversion。未完成 Established 时，CR 请求可能失败或行为不稳定。</p>
+          <span class="state">CRD status: Established</span>
+        </article>
+        <article class="compare-card" style="--accent:var(--green)">
+          <div class="eyebrow">Declare desired state</div>
+          <h3><code>apply CR</code></h3>
+          <p>用户声明期望状态（spec）。Operator Watch 到对象后进入 Reconcile，创建内置资源并回写 status。</p>
+          <span class="state">CR + 子资源收敛</span>
+        </article>
+        <div class="equation"><strong>Operator 模式</strong> ≈ <code>CRD</code> + <code>Controller</code> +（可选）<code>Webhook</code> · 控制环路由 apiserver 统一入口</div>
+      </div>
+      <div class="flow-grid">
+        <div class="command-card">
+          <div class="eyebrow">Example manifest</div>
+          <div class="terminal"><span class="dim">$</span> kubectl apply -f config/samples/myapp_v1_myapp.yaml<br><br><span class="dim"># Operator 已在集群运行并 Watch MyApp</span><br><span class="dim"># 不是「CR 直接变成 Pod」</span><br><span class="dim"># 而是 Controller 创建 Deployment 等对象</span></div>
+          <div class="callout">控制面（apiserver + etcd + admission）与<strong>数据面</strong>（Pod 流量）分离：CRD 扩展的是 Kubernetes API，不是替换 kubelet/CNI。</div>
+        </div>
+        <div class="flow-card">
+          <div class="step"><span class="step-num">01</span><div><strong>kubectl 解析 GVK</strong><small>RESTMapper / discovery</small></div><code>kubectl</code></div>
+          <div class="step"><span class="step-num">02</span><div><strong>鉴权 Authorization</strong><small>RBAC 检查 verbs on GVR</small></div><code>RoleBinding</code></div>
+          <div class="step"><span class="step-num">03</span><div><strong>Mutating Admission</strong><small>默认值、标签注入</small></div><code>Webhook</code></div>
+          <div class="step"><span class="step-num">04</span><div><strong>OpenAPI 结构校验</strong><small>CRD schema + CEL</small></div><code>structural</code></div>
+          <div class="step"><span class="step-num">05</span><div><strong>Validating Admission</strong><small>业务规则拒绝</small></div><code>Webhook</code></div>
+          <div class="step"><span class="step-num">06</span><div><strong>持久化 etcd</strong><small>metadata.generation++</small></div><code>apiserver</code></div>
+          <div class="step"><span class="step-num">07</span><div><strong>Watch 推送 MODIFIED</strong><small>resourceVersion 更新</small></div><code>informer</code></div>
+          <div class="step"><span class="step-num">08</span><div><strong>入队 WorkQueue</strong><small>namespace/name 去重</small></div><code>ctrl.Request</code></div>
+          <div class="step"><span class="step-num">09</span><div><strong>Reconcile 读 spec</strong><small>从 cache Get</small></div><code>client.Get</code></div>
+          <div class="step"><span class="step-num">10</span><div><strong>创建/更新子资源</strong><small>Deployment、Service…</small></div><code>SetControllerReference</code></div>
+          <div class="step"><span class="step-num">11</span><div><strong>更新 status 子资源</strong><small>conditions、observedGeneration</small></div><code>Status().Update</code></div>
+          <div class="step"><span class="step-num">12</span><div><strong>Requeue 或完成</strong><small>错误退避；周期对齐</small></div><code>Result{RequeueAfter}</code></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="shell section" id="interfaces">
+      <div class="section-head">
+        <div><div class="eyebrow">04 / Interface Catalog</div><h2>跨层接口目录</h2></div>
+        <p class="section-note">可按协议、对象或关键词筛选。Webhook 路径与证书因项目而异。</p>
+      </div>
+      <div class="toolbar">
+        <input class="search" id="search" type="search" placeholder="搜索：informer、webhook、status、CEL…" aria-label="搜索接口">
+        <button class="chip active" data-filter="all">全部</button>
+        <button class="chip" data-filter="control">控制面 API</button>
+        <button class="chip" data-filter="runtime">Operator 运行时</button>
+        <button class="chip" data-filter="spec">规范 / 对象模型</button>
+      </div>
+      <div class="catalog" id="catalog">
+        <div class="catalog-row header"><span>调用关系</span><span>接口 / 协议</span><span>典型端点或对象</span><span>职责</span></div>
+        <div class="catalog-row" data-kind="control"><strong>kubectl → apiserver</strong><span>Kubernetes API · HTTPS/JSON <i class="tag">控制面</i></span><code>/apis/&lt;group&gt;/&lt;version&gt;/...</code><span>CRUD、watch、patch、apply、discovery</span></div>
+        <div class="catalog-row" data-kind="control"><strong>admin → apiserver</strong><span>apiextensions.k8s.io/v1 <i class="tag">控制面</i></span><code>CustomResourceDefinition</code><span>注册 CR、schema、conversion、subresources</span></div>
+        <div class="catalog-row" data-kind="spec"><strong>CRD → OpenAPI</strong><span>Structural OpenAPI v3 <i class="tag">规范</i></span><code>spec.versions[].schema</code><span>类型、必填、默认值、preserveUnknownFields</span></div>
+        <div class="catalog-row" data-kind="spec"><strong>CRD → CEL</strong><span>x-kubernetes-validations <i class="tag">规范</i></span><code>rule / message / fieldPath</code><span>跨字段校验，替代部分 webhook 逻辑</span></div>
+        <div class="catalog-row" data-kind="control"><strong>apiserver → webhook</strong><span>AdmissionReview v1 <i class="tag">控制面</i></span><code>/mutate · /validate</code><span>变更或拒绝对象；failurePolicy 决定失败行为</span></div>
+        <div class="catalog-row" data-kind="control"><strong>apiserver → conversion</strong><span>ConversionReview <i class="tag">控制面</i></span><code>webhook conversion</code><span>多版本 CR 读写时转换为 storage 版本</span></div>
+        <div class="catalog-row" data-kind="control"><strong>apiserver → etcd</strong><span>etcd v3 API <i class="tag">控制面</i></span><code>/registry/...</code><span>持久化对象；MVCC revision → resourceVersion</span></div>
+        <div class="catalog-row" data-kind="runtime"><strong>controller → apiserver</strong><span>client-go RESTClient <i class="tag">运行时</i></span><code>Get/List/Watch/Patch/Update</code><span>读写 CR 与内置资源；Status 用 subresource</span></div>
+        <div class="catalog-row" data-kind="runtime"><strong>informer → apiserver</strong><span>ListWatch · Reflector <i class="tag">运行时</i></span><code>resourceVersion bookmark</code><span>本地 cache + 事件；降低 apiserver 负载</span></div>
+        <div class="catalog-row" data-kind="runtime"><strong>informer → workqueue</strong><span>Rate limiting queue <i class="tag">运行时</i></span><code>namespace/name key</code><span>合并 burst 事件；指数退避重试</span></div>
+        <div class="catalog-row" data-kind="runtime"><strong>reconciler → manager</strong><span>controller-runtime <i class="tag">运行时</i></span><code>Reconcile(Request) (Result, error)</code><span>注册 controller、webhook、health、metrics</span></div>
+        <div class="catalog-row" data-kind="spec"><strong>CR → child</strong><span>OwnerReference <i class="tag">规范</i></span><code>controller: true · blockOwnerDeletion</code><span>级联删除；GC 控制器清理孤儿</span></div>
+        <div class="catalog-row" data-kind="spec"><strong>CR delete</strong><span>Finalizers <i class="tag">规范</i></span><code>metadata.finalizers[]</code><span>删除时先 DeletionTimestamp，控制器清理后移除 finalizer</span></div>
+        <div class="catalog-row" data-kind="spec"><strong>status 模型</strong><span>Conditions · ObservedGeneration <i class="tag">规范</i></span><code>type/status/reason/message</code><span>可观测性；对齐 spec.generation 是否已处理</span></div>
+        <div class="catalog-row" data-kind="control"><strong>apiserver → aggregation</strong><span>APIService · extension apiserver <i class="tag">旁路</i></span><code>aggregation layer</code><span>独立进程扩展 API；与 CRD 机制不同</span></div>
+        <div class="catalog-row" data-kind="runtime"><strong>operator HA</strong><span>Leader Election <i class="tag">运行时</i></span><code>coordination.k8s.io/Lease</code><span>多副本 Operator 仅 leader 运行 Reconcile</span></div>
+        <div class="catalog-row" data-kind="control"><strong>SSA</strong><span>Server-Side Apply <i class="tag">控制面</i></span><code>fieldManager · managedFields</code><span>多控制器协作同一对象时的字段所有权</span></div>
+        <div class="catalog-row" data-kind="runtime"><strong>codegen</strong><span>controller-gen / deepcopy <i class="tag">运行时</i></span><code>+kubebuilder:object:root</code><span>生成 CRD YAML、RBAC、Webhook 配置与 Go types</span></div>
+        <div class="empty" id="empty">没有匹配的接口。</div>
+      </div>
+    </section>
+
+    <section class="shell section" id="interview">
+      <div class="section-head">
+        <div><div class="eyebrow">05 / Interview Essentials</div><h2>CRD / Operator 与 K8s 高频面试题</h2></div>
+        <p class="section-note">先给 30 秒结论，再讲机制与边界。点击题目展开参考答案。</p>
+      </div>
+      <div class="interview-tip">
+        <b>答题结构</b>
+        <p><strong>是什么</strong> → <strong>请求怎么走</strong> → <strong>控制器怎么收敛</strong> → <strong>失败与边界</strong>。避免把 CRD 说成「另一种 Pod」或「直接跑在 etcd 里的脚本」。</p>
+      </div>
+      <div class="interview-grid">
+        <details class="qa" open>
+          <summary><span class="q-num">Q01</span>CRD 和 API Aggregation 有什么区别？怎么选型？</summary>
+          <div class="answer"><p><strong>CRD</strong> 由 apiserver 内置 apiextensions 模块动态注册 REST，无需独立 APIServer 进程；<strong>Aggregation</strong> 通过 APIService 把请求转发到扩展 apiserver，适合复杂校验、大量逻辑或非 etcd 存储。</p><p class="key">面试结论：大多数 Operator 用 CRD + controller-runtime；只有需要完全自定义 apiserver 时才考虑 Aggregation。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q02</span>GVK、GVR、Kind、Resource 分别是什么？</summary>
+          <div class="answer"><p>GVK 是 API 类型标识（manifest 里的 apiVersion/kind）；GVR 是 REST 路径中的 group/version/<strong>resource</strong>（复数 plural）。Kind 是类型名，Resource 是 URL 段，由 CRD <code>spec.names</code> 定义。</p><p class="key">RESTMapper 负责 GVK ↔ GVR 映射；写 client 时要分清 typed client 与 dynamic client。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q03</span>CRD 的 structural schema 是什么？为什么重要？</summary>
+          <div class="answer"><p>v1 CRD 要求 schema 满足结构约束：例如 <code>spec</code> 下对象类型不能随意嵌套未知结构，避免 <code>metadata</code> 等字段被误放到错误位置，并支持 pruning 与 CEL。</p><p class="key">非 structural 的旧 CRD 在新版本集群上受限；kubebuilder 默认生成 structural schema。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q04</span>spec 和 status 为什么要分开？status 子资源做什么？</summary>
+          <div class="answer"><p>spec 是用户期望；status 是系统观测。启用 <code>subresources.status</code> 后，更新 status 走独立 API，RBAC 可拆成 <code>myapps</code> 与 <code>myapps/status</code>，减少 spec/status 写冲突。</p><p class="key">Reconcile 中改 spec 用 Update/Patch；回写 status 用 <code>Status().Update</code> 或 status subresource patch。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q05</span>Reconcile 为什么要设计成幂等、level-triggered？</summary>
+          <div class="answer"><p>同一对象会多次入队（重试、resync、子资源变化）。Reconcile 应基于<strong>当前 spec</strong> 对齐世界状态，而不是假设「只处理一次 CREATE 事件」。</p><p class="key">Edge-triggered 易丢状态；level-triggered + workqueue 是 Kubernetes 控制器标准模式。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q06</span>Informer 和直接 List Watch 有什么区别？</summary>
+          <div class="answer"><p>Informer = Reflector（List+Watch）+ 本地 Indexer 缓存 + 事件分发。Reconcile 从 cache 读，降低 apiserver 压力并保证同进程内读一致。</p><p class="key">cache 可能略滞后于 etcd；需要强一致读时用 API 直接 Get（仍经 apiserver）。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q07</span>WorkQueue 如何防止 Reconcile 风暴？</summary>
+          <div class="answer"><p>事件触发时只把 <code>namespace/name</code> 入队并 dedupe；同一 key 处理完前不会并行重复处理（单 worker 模型下）。失败则 rate limited requeue。</p><p class="key">不要在一个 Informer handler 里做重逻辑；只做 enqueue。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q08</span>OwnerReference 和 Finalizer 分别解决什么问题？</summary>
+          <div class="answer"><p>OwnerReference 让 garbage collector 在删除 CR 时级联删除子资源（controller=true）。Finalizer 让 CR 在 <code>DeletionTimestamp</code> 后仍保留，直到控制器完成外部清理并移除 finalizer。</p><p class="key">只有 OwnerReference 无法阻止「CR 删了但云资源还在」；外部依赖常用 finalizer。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q09</span>Mutating 和 Validating Webhook 的执行顺序？</summary>
+          <div class="answer"><p>先 Mutating（可改对象），再内置/OpenAPI 校验，再 Validating（只读校验）。任一失败可拒绝请求（取决于 failurePolicy）。</p><p class="key">CRD default 在 schema 层；复杂 default 仍常用 mutating webhook。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q10</span>多版本 CRD 如何存储与 serving？Conversion 何时需要？</summary>
+          <div class="answer"><p><code>versions[]</code> 中 exactly one <code>storage: true</code>；多个 <code>served: true</code> 可同时暴露。客户端读 v2 时 apiserver 可能通过 conversion webhook 转为 storage 版本再存 etcd。</p><p class="key">单版本 CRD 不需要 conversion；升级 API 版本是常见面试深挖点。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q11</span>generation 与 observedGeneration 有什么用？</summary>
+          <div class="answer"><p><code>metadata.generation</code> 在 spec 变化时递增（status 变化通常不增）。status 里 <code>observedGeneration</code> 表示控制器已处理的 spec 代数，用于判断「是否仍在上一次 spec 上运行」。</p><p class="key">Conditions 应配合 observedGeneration，避免旧 status 误导用户。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q12</span>Operator 多副本如何避免重复 Reconcile？</summary>
+          <div class="answer"><p>使用 <strong>Leader Election</strong>（Lease 对象）；仅 leader 注册 controller。非 leader 进程可仍提供 webhook 或 metrics，取决于部署设计。</p><p class="key">没有 leader election 的多副本会导致重复创建资源或冲突写。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q13</span>client-go 与 controller-runtime 的关系？</summary>
+          <div class="answer"><p>controller-runtime 基于 client-go，封装 Manager、Reconciler 接口、Webhook、Scheme 与 cache 共享。kubebuilder 项目默认用 controller-runtime。</p><p class="key">底层仍是 ListWatch + workqueue；理解 client-go 有助于排查 cache 与 RBAC 问题。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q14</span>CR 的 RBAC 一般怎么设计？</summary>
+          <div class="answer"><p>人类用户：对 CR 的 get/list/watch/create/update/patch/delete；Operator ServiceAccount：对 CR 与 status 子资源、以及其创建的 Deployment 等资源的 verbs。ClusterRole + RoleBinding 或 namespace Role。</p><p class="key">controller-gen 可生成 <code>+kubebuilder:rbac</code> 注解对应的 manifest。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q15</span>Server-Side Apply 和 CRD 开发有什么关系？</summary>
+          <div class="answer"><p>SSA 用 fieldManager 跟踪字段所有权，多控制器/用户协作同一对象时减少 patch 冲突。Operator 创建子资源时也常用 SSA 或 CreateOrUpdate。</p><p class="key">面试可提：CR 本身 apply 与 Controller  patch 子资源是不同层级的协作问题。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q16</span>CEL 校验能否替代 Validating Webhook？</summary>
+          <div class="answer"><p>CEL 适合声明式、无外部依赖的规则（范围、跨字段）。需要查集群其他对象、调用外部系统、复杂业务仍用 webhook。</p><p class="key">CEL 在 apiserver 内执行，延迟低；webhook 要注意 timeout 与高可用。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q17</span>CRD Established=False 常见原因？</summary>
+          <div class="answer"><p>schema 不合法、版本名冲突、conversion 配置错误、与已有 CRD 名称冲突等。需 <code>kubectl describe crd</code> 看 conditions message。</p><p class="key">未 Established 时不要假设 REST 已完整可用。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q18</span>如何调试 Reconcile 不生效？</summary>
+          <div class="answer"><p>检查：CRD/CR RBAC、Informer 是否 Watch 正确 GVK、WorkQueue 是否 requeue 错误、子资源 Create 是否 AlreadyExists、status 子资源权限、webhook 是否拒绝。</p><p class="key">启用 controller 日志、<code>kubectl describe</code> events、metrics（reconcile_errors_total）。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q19</span>kube-apiserver 为什么是 Kubernetes 的核心？</summary>
+          <div class="answer"><p>它统一提供 REST、鉴权、RBAC、准入、审计、版本转换和 Watch，也是核心组件访问 etcd 的唯一入口。其他组件主要通过 API 对象解耦。</p><p class="key">Kubernetes 的中心是声明式 API，不是组件间互相远程调用。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q20</span>Scheduler 和 kubelet 分别负责什么？</summary>
+          <div class="answer"><p>Scheduler 为未绑定 Pod 选择 Node 并写入 binding；kubelet Watch 本节点 Pod，通过 CRI/CNI/CSI 把 PodSpec 落地并汇报状态。</p><p class="key">Scheduler 不启动容器，kubelet 不负责全局节点选择。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q21</span>Deployment 创建 Pod 的完整控制链是什么？</summary>
+          <div class="answer"><p>Deployment Controller 创建 ReplicaSet，ReplicaSet Controller 创建 Pod；Scheduler 绑定 Node；目标 Node 上 kubelet 调用运行时创建容器。</p><p class="key"><code>Deployment → ReplicaSet → Pod → Scheduler → kubelet → CRI</code>。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q22</span>CRI、CNI、CSI 分别解决什么问题？</summary>
+          <div class="answer"><p>CRI 是 kubelet 与容器运行时接口；CNI 负责 Pod 网络；CSI 负责存储供应、Attach 与 Mount。它们是三个独立插件边界。</p><p class="key">不要把 kube-proxy 说成 CNI：前者主要实现 Service 转发，后者实现 Pod 网络。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q23</span>kube-proxy 与 CoreDNS 的职责区别？</summary>
+          <div class="answer"><p>CoreDNS 负责把 Service 名解析为 ClusterIP 或 Endpoint；kube-proxy/替代 eBPF 数据面负责把 Service VIP 流量转发到后端 Pod。</p><p class="key">DNS 解决“名字对应哪个地址”，数据面解决“数据包如何到达后端”。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q24</span>Operator 属于 Kubernetes 控制面吗？</summary>
+          <div class="answer"><p>通常不属于内置控制面。Operator 是以 Deployment/Pod 运行的自定义控制器，但遵循与内置 controller-manager 相同的 List-Watch + WorkQueue + Reconcile 模式。</p><p class="key">它扩展 Kubernetes API 行为，不意味着必须部署在 control-plane Node。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q25</span>组件之间为什么大量使用 List-Watch 而不是直接 RPC？</summary>
+          <div class="answer"><p>组件围绕 apiserver 中的持久化期望状态异步协作，可独立重启、重试和水平扩展；List 提供初始快照，Watch 提供增量变化。</p><p class="key">Informer 是建立在 List-Watch 之上的缓存、索引和事件分发封装。</p></div>
+        </details>
+        <details class="qa">
+          <summary><span class="q-num">Q26</span>etcd 故障时已运行 Pod 会立即停止吗？</summary>
+          <div class="answer"><p>通常不会。节点上的现有容器继续运行，但 API 写入、调度、控制器收敛与状态更新受阻；控制面恢复后再继续同步。</p><p class="key">etcd 存储控制面状态，不在业务数据包和容器进程的运行主路径上。</p></div>
+        </details>
+      </div>
+    </section>
+
+    <section class="shell section" id="history">
+      <div class="section-head">
+        <div><div class="eyebrow">06 / Toolchain & Evolution</div><h2>从 client-go Sample 到 Kubebuilder</h2></div>
+      </div>
+      <div class="history">
+        <p class="section-note" style="max-width:900px">CRD 机制随 Kubernetes 版本演进：apiextensions v1beta1 已废弃；structural schema、CEL、SSA 成为默认面试考点。工具链降低样板代码，但不改变 apiserver + Reconcile 本质。</p>
+        <div class="timeline">
+          <article class="era"><time>早期 · client-go</time><h3>手写 Informer + workqueue</h3><p>直接基于 sample-controller 理解 Reflector、DeltaFIFO、Indexer。样板多但原理最清晰。</p></article>
+          <article class="era"><time>Kubebuilder / Operator SDK</time><h3>脚手架 + controller-runtime</h3><p><code>kubebuilder init</code>、marker 注解、controller-gen 生成 CRD/RBAC/Webhook；Reconcile 接口标准化。</p></article>
+          <article class="era"><time>K8s 1.25+</time><h3>CEL · SSA · 策略收紧</h3><p>ValidatingAdmissionPolicy 与 CRD CEL 并存；多控制器协作更强调 fieldManager 与 status 子资源。</p></article>
+        </div>
+        <div class="callout"><strong>记忆口诀：</strong>CRD 注册 API → CR 进 etcd → Informer 缓存 → Queue 去重 → Reconcile 对齐 → status 回写。Webhook 横切准入；Finalizer 横切删除。</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-inner">
+      <span>K8s CRD Internals · 基于 apiextensions v1 + controller-runtime 主链</span>
+      <span>集群版本与 webhook 行为请以官方文档与所用 Kubebuilder 版本为准</span>
+    </div>
+  </footer>
+
+  <script>
+    const details = {
+      kubectl: ["客户端 · USER-FACING", "kubectl", "kubeconfig + discovery", "解析 manifest，协商 API 版本，经 REST 与 apiserver 交互；本身不运行 Reconcile。", "apply/get/patch/describe", "HTTPS REST → kube-apiserver", "JSON/Protobuf；Token 或客户端证书", "<code>GET /apis</code> · CRUD on GVR", "Server-side apply 需理解 fieldManager；写 status 需对应 RBAC。"],
+      client: ["客户端库", "client-go / controller-runtime Client", "typed · dynamic · cache reader", "封装 REST 调用；controller-runtime 在 Reconcile 中优先从 cache 读。", "Go struct · unstructured", "apiserver REST", "Scheme 注册 GVK ↔ Go type", "<code>Get</code> · <code>List</code> · <code>Patch</code> · <code>Status().Update</code>", "dynamic client 适合无 Go 类型的 CR；生产 Operator 多用 typed + Scheme。"],
+      codegen: ["工具链", "kubebuilder / controller-gen", "markers + code generation", "从 Go types 生成 CRD YAML、DeepCopy、RBAC、Webhook 配置。", "CRD manifest · Makefile", "写入 config/crd · deploy", "Go AST + marker comments", "<code>+kubebuilder:object:root</code> · <code>:rbac</code>", "改 API 后需重新 make manifests；CRD 变更可能影响已存 CR。"],
+      apiserver: ["控制面 · CORE", "kube-apiserver", "Kubernetes API front door", "鉴权、准入、REST 路由、聚合、watch；唯一 etcd 网关。", "Kubernetes REST API", "etcd · webhooks · aggregation", "HTTPS", "<code>/api/v1</code> · <code>/apis/*</code>", "所有控制器与 kubectl 都应只对话 apiserver。"],
+      crdhandler: ["控制面 · EXTENSION", "CRD REST Handler", "apiextensions built-in", "根据已 Established 的 CRD 动态注册 REST storage，serve 自定义 GVR。", "CR instances REST", "etcd generic registry", "OpenAPI merge", "<code>/apis/&lt;group&gt;/&lt;version&gt;/&lt;resource&gt;</code>", "CRD 更新可能导致 schema 迁移；注意 storage 版本变更策略。"],
+      aggregation: ["旁路扩展", "API Aggregation Layer", "APIService", "将指定 Group 转发到 extension apiserver；非 CRD 路径。", "APIService object", "extension apiserver pod", "TLS proxy", "<code>v1beta1.metrics.k8s.io</code> 类", "面试对比 CRD：更重、更灵活、运维成本更高。"],
+      openapi: ["Schema · VALIDATION", "OpenAPI v3 Schema", "structural + defaults", "定义 CR 字段类型与约束；apiserver 在写入前校验。", "published OpenAPI", "CRD spec.versions[].schema", "JSON Schema subset", "CEL x-kubernetes-validations", "preserveUnknownFields=false 时未知字段被裁剪或拒绝。"],
+      defaulting: ["Schema · DEFAULTING", "Defaulting", "CRD defaults · mutating webhook", "为未填字段设默认值；CRD schema default 在较新版本支持，复杂逻辑用 webhook。", "mutating admission", "patch 对象", "JSON patch from webhook", "default replicas=1", "default 改变 spec 会 bump generation。"],
+      subresource: ["API · SUBRESOURCE", "Subresources", "/status · /scale", "独立 REST 路径更新 status 或 HPA scale；RBAC 可细分。", "status subresource API", "status field in CR", "<code>/status</code> endpoint", "scale 需 additionalPrinterColumns 可选", "Reconcile 回写 status 必须使用 status 客户端。"],
+      admission: ["准入链", "Admission Chain", "authn → authz → mutate → validate", "在对象写入 etcd 前执行；顺序固定。", "Admission plugins", "webhooks · policy", "AdmissionReview", "PodSecurity · ResourceQuota", "CRD OpenAPI 校验是 apiserver 内置步骤，不是 webhook。"],
+      webhooks: ["准入 · WEBHOOK", "Admission Webhooks", "mutating · validating · conversion", "独立服务接收 AdmissionReview/ConversionReview；需 CA 与 network 可达。", "HTTPS POST", "TLS cert from cert-manager", "<code>failurePolicy</code> · <code>timeoutSeconds</code>", "Webhook 不可用 + Fail = 集群无法创建 CR。"],
+      etcd: ["持久化", "etcd", "cluster backing store", "存储所有 API 对象（含 CR）；MVCC revision 暴露为 resourceVersion。", "key-value", "apiserver only client", "Raft consensus", "<code>/registry/...</code> keys", "Controller 禁止直连 etcd。"],
+      watch: ["控制面 · WATCH", "List-Watch", "resourceVersion stream", "List 获取初始快照和 RV；Watch 从该 RV 之后接收增量事件。Watch 中断或遇到 410 Gone 时重新 List。", "HTTP streaming", "Reflector → DeltaFIFO → Informer", "ADDED/MODIFIED/DELETED", "410 Gone → relist", "Informer 是 List-Watch 之上的缓存、索引与事件处理封装；Watch 只是其中的增量流。"],
+      informer: ["Operator · CACHE", "SharedInformer / Cache", "Indexer + Lister", "进程内缓存 CR 与内置对象；Register EventHandler 触发 enqueue。", "local cache read", "apiserver ListWatch", "thread-safe store", "SharedIndexInformer", "Resync 周期触发全量 Reconcile 是安全网，不是主路径。"],
+      workqueue: ["Operator · QUEUE", "Rate Limiting WorkQueue", "dedupe by key", "合并 burst 事件；失败指数退避；成功 Forget。", "namespace/name keys", "reconciler workers", "RateLimiter interface", "<code>AddRateLimited</code>", "不要在 queue 里存整对象，只存 key。"],
+      reconciler: ["Operator · LOGIC", "Reconciler", "level-triggered loop", "读取 spec，创建/更新/删除子资源，更新 status；必须幂等。", "business logic", "client Create/Patch/Delete", "Result RequeueAfter", "<code>Reconcile(ctx, req)</code>", "返回 error 会 requeue；NotFound 通常表示已删除。"],
+      manager: ["Operator · RUNTIME", "controller-runtime Manager", "signals · metrics · webhooks", "启动 controllers、选主、注册 scheme、health/readiness。", "ctrl.NewManager", "LeaderElection", "Webhook server", "<code>SetupWithManager</code>", "一个进程一个 Manager 可注册多个 Controller。"],
+      child: ["落地 · WORKLOAD", "Child Resources", "Deployment · Service · PVC", "Operator 根据 CR spec 创建的内置或其他 CR 对象。", "desired cluster state", "apiserver create", "labels · selectors", "CreateOrUpdate / SSA", "SetControllerReference 建立 owner 关系。"],
+      finalizer: ["生命周期 · DELETE", "Finalizers", "metadata.finalizers", "删除 CR 时阻塞直到控制器移除 finalizer；用于清理集群外资源。", "update metadata", "remove when done", "custom.io/cleanup", "foreground/background deletion", "忘记移除 finalizer 会导致 CR 卡在 Terminating。"],
+      owner: ["生命周期 · GC", "OwnerReference", "controller + uid", "GC 根据 owner 级联删除；blockOwnerDeletion 影响删除顺序。", "garbage collector", "ownerReferences[]", "controller: true", "dependent objects", "CR 删了，owned Deployment 默认一起删。"]
+    };
+
+    const fields = ["detailType","detailTitle","detailAlias","detailDesc","detailUp","detailDown","detailWire","detailApi","detailNote"];
+    document.querySelectorAll(".node").forEach(node => node.addEventListener("click", () => {
+      document.querySelectorAll(".node").forEach(n => n.classList.remove("active"));
+      node.classList.add("active");
+      details[node.dataset.node].forEach((value, index) => document.getElementById(fields[index]).innerHTML = value);
+      if (window.innerWidth < 1050) document.querySelector(".detail").scrollIntoView({behavior: "smooth", block: "center"});
+    }));
+
+    const rows = [...document.querySelectorAll(".catalog-row[data-kind]")];
+    const search = document.getElementById("search");
+    let activeFilter = "all";
+    function filterRows() {
+      const query = search.value.trim().toLowerCase();
+      let visible = 0;
+      rows.forEach(row => {
+        const matchesKind = activeFilter === "all" || row.dataset.kind === activeFilter;
+        const matchesText = !query || row.textContent.toLowerCase().includes(query);
+        row.classList.toggle("hidden", !(matchesKind && matchesText));
+        if (matchesKind && matchesText) visible++;
+      });
+      document.getElementById("empty").style.display = visible ? "none" : "block";
+    }
+    search.addEventListener("input", filterRows);
+    document.querySelectorAll("[data-filter]").forEach(button => button.addEventListener("click", () => {
+      document.querySelectorAll("[data-filter]").forEach(b => b.classList.remove("active"));
+      button.classList.add("active");
+      activeFilter = button.dataset.filter;
+      filterRows();
+    }));
+  </script>
+</body>
+</html>
