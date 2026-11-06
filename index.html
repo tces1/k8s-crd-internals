@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Kubernetes CRD 从 kubectl 到 etcd、Informer 与 Reconcile 的完整扩展开发链路。">
-  <title>K8s CRD 开发 · 全链路调用图谱</title>
+  <meta name="description" content="Kubernetes 控制面、节点组件、容器运行链路，以及 CRD 与 Operator 扩展实现的完整知识图谱。">
+  <title>Kubernetes 原理 · 架构与 CRD 扩展图谱</title>
   <style>
     :root {
       --bg: #060a12;
@@ -285,10 +285,10 @@
 <body>
   <header class="topbar">
     <div class="shell topbar-inner">
-      <div class="brand"><span class="brand-mark">⎈</span> K8s CRD Internals</div>
+      <div class="brand"><span class="brand-mark">⎈</span> Kubernetes Internals</div>
       <nav aria-label="页面导航">
-        <a href="#architecture">CRD 架构</a>
-        <a href="#k8s-internals">K8s 内部组件</a>
+        <a href="#k8s-internals">整体架构</a>
+        <a href="#architecture">CRD 实现</a>
         <a href="#lifecycle">Reconcile 链路</a>
         <a href="#interfaces">接口目录</a>
         <a href="#interview">高频面试题</a>
@@ -300,22 +300,22 @@
   <main>
     <section class="shell hero">
       <div>
-        <div class="eyebrow">From manifest to reconcile</div>
-        <h1>Kubernetes CRD<br><span>扩展开发调用图谱</span></h1>
-        <p class="lead">一次 <code>kubectl apply</code> 自定义资源，如何穿过 REST、OpenAPI 结构校验、etcd 持久化、List-Watch/Informer，最终进入 Controller 的 level-triggered Reconcile 循环，并关联 Kubernetes 控制面与节点组件。</p>
+        <div class="eyebrow">Architecture before extension</div>
+        <h1>Kubernetes 原理<br><span>架构与扩展开发图谱</span></h1>
+        <p class="lead">先理解控制面、Node、CRI/CNI/CSI 以及 Deployment 到容器进程的完整链路，再进入 CRD、List-Watch/Informer 与 Operator Reconcile 的扩展实现。</p>
       </div>
       <div class="hero-stats" aria-label="架构统计">
-        <div class="stat"><strong>7</strong><small>逻辑层级</small></div>
-        <div class="stat"><strong>22+</strong><small>关键接口</small></div>
-        <div class="stat"><strong>3</strong><small>核心对象 CRD·CR·Controller</small></div>
-        <div class="stat"><strong>∞</strong><small>可重入 Reconcile</small></div>
+        <div class="stat"><strong>2</strong><small>控制面与数据面</small></div>
+        <div class="stat"><strong>12+</strong><small>K8s 核心组件</small></div>
+        <div class="stat"><strong>3</strong><small>插件边界 CRI·CNI·CSI</small></div>
+        <div class="stat"><strong>∞</strong><small>声明式控制循环</small></div>
       </div>
     </section>
 
     <section class="shell section" id="architecture">
       <div class="section-head">
-        <div><div class="eyebrow">01 / Architecture</div><h2>点击组件，查看它在 CRD 链路中的边界</h2></div>
-        <p class="section-note">主链展示「声明 CRD → 用户提交 CR → Operator 收敛」的标准路径。API Aggregation 与 CRD 是两条不同的扩展 API 机制。</p>
+        <div><div class="eyebrow">02 / CRD Implementation</div><h2>CRD 如何接入 Kubernetes API 与控制循环</h2></div>
+        <p class="section-note">在整体架构之上，继续拆解「声明 CRD → 用户提交 CR → Operator 收敛」的实现。API Aggregation 与 CRD 是两条不同的扩展 API 机制。</p>
       </div>
       <div class="legend">
         <span class="pill" style="color:var(--blue)"><i class="dot"></i>用户 / 客户端</span>
@@ -552,8 +552,8 @@ GET /apis/apps.example.com/v1/namespaces/default/myapps?watch=true&resourceVersi
 
     <section class="shell section" id="k8s-internals">
       <div class="section-head">
-        <div><div class="eyebrow">02 / Kubernetes Internals</div><h2>Kubernetes 内部组件与 CRD 的关联</h2></div>
-        <p class="section-note">先理解原生 Kubernetes 如何把 Deployment 变成运行中的 Pod，再看 Operator 如何通过 CR 把自定义领域模型接入同一套控制环路。</p>
+        <div><div class="eyebrow">01 / Kubernetes Architecture</div><h2>Kubernetes 整体架构与组件调用关系</h2></div>
+        <p class="section-note">从控制面和 Node 两个视角理解原生 Kubernetes 如何把 Deployment 变成运行中的 Pod；CRD/Operator 是建立在这套架构之上的扩展机制。</p>
       </div>
 
       <div class="k8s-overview">
@@ -819,36 +819,36 @@ GET /apis/apps.example.com/v1/namespaces/default/myapps?watch=true&resourceVersi
           <summary><span class="q-num">Q18</span>如何调试 Reconcile 不生效？</summary>
           <div class="answer"><p>检查：CRD/CR RBAC、Informer 是否 Watch 正确 GVK、WorkQueue 是否 requeue 错误、子资源 Create 是否 AlreadyExists、status 子资源权限、webhook 是否拒绝。</p><p class="key">启用 controller 日志、<code>kubectl describe</code> events、metrics（reconcile_errors_total）。</p></div>
         </details>
-        <details class="qa">
-          <summary><span class="q-num">Q19</span>kube-apiserver 为什么是 Kubernetes 的核心？</summary>
+        <details class="qa k8s-core">
+          <summary><span class="q-num">K01</span>kube-apiserver 为什么是 Kubernetes 的核心？</summary>
           <div class="answer"><p>它统一提供 REST、鉴权、RBAC、准入、审计、版本转换和 Watch，也是核心组件访问 etcd 的唯一入口。其他组件主要通过 API 对象解耦。</p><p class="key">Kubernetes 的中心是声明式 API，不是组件间互相远程调用。</p></div>
         </details>
-        <details class="qa">
-          <summary><span class="q-num">Q20</span>Scheduler 和 kubelet 分别负责什么？</summary>
+        <details class="qa k8s-core">
+          <summary><span class="q-num">K02</span>Scheduler 和 kubelet 分别负责什么？</summary>
           <div class="answer"><p>Scheduler 为未绑定 Pod 选择 Node 并写入 binding；kubelet Watch 本节点 Pod，通过 CRI/CNI/CSI 把 PodSpec 落地并汇报状态。</p><p class="key">Scheduler 不启动容器，kubelet 不负责全局节点选择。</p></div>
         </details>
-        <details class="qa">
-          <summary><span class="q-num">Q21</span>Deployment 创建 Pod 的完整控制链是什么？</summary>
+        <details class="qa k8s-core">
+          <summary><span class="q-num">K03</span>Deployment 创建 Pod 的完整控制链是什么？</summary>
           <div class="answer"><p>Deployment Controller 创建 ReplicaSet，ReplicaSet Controller 创建 Pod；Scheduler 绑定 Node；目标 Node 上 kubelet 调用运行时创建容器。</p><p class="key"><code>Deployment → ReplicaSet → Pod → Scheduler → kubelet → CRI</code>。</p></div>
         </details>
-        <details class="qa">
-          <summary><span class="q-num">Q22</span>CRI、CNI、CSI 分别解决什么问题？</summary>
+        <details class="qa k8s-core">
+          <summary><span class="q-num">K04</span>CRI、CNI、CSI 分别解决什么问题？</summary>
           <div class="answer"><p>CRI 是 kubelet 与容器运行时接口；CNI 负责 Pod 网络；CSI 负责存储供应、Attach 与 Mount。它们是三个独立插件边界。</p><p class="key">不要把 kube-proxy 说成 CNI：前者主要实现 Service 转发，后者实现 Pod 网络。</p></div>
         </details>
-        <details class="qa">
-          <summary><span class="q-num">Q23</span>kube-proxy 与 CoreDNS 的职责区别？</summary>
+        <details class="qa k8s-core">
+          <summary><span class="q-num">K05</span>kube-proxy 与 CoreDNS 的职责区别？</summary>
           <div class="answer"><p>CoreDNS 负责把 Service 名解析为 ClusterIP 或 Endpoint；kube-proxy/替代 eBPF 数据面负责把 Service VIP 流量转发到后端 Pod。</p><p class="key">DNS 解决“名字对应哪个地址”，数据面解决“数据包如何到达后端”。</p></div>
         </details>
-        <details class="qa">
-          <summary><span class="q-num">Q24</span>Operator 属于 Kubernetes 控制面吗？</summary>
+        <details class="qa k8s-core">
+          <summary><span class="q-num">K06</span>Operator 属于 Kubernetes 控制面吗？</summary>
           <div class="answer"><p>通常不属于内置控制面。Operator 是以 Deployment/Pod 运行的自定义控制器，但遵循与内置 controller-manager 相同的 List-Watch + WorkQueue + Reconcile 模式。</p><p class="key">它扩展 Kubernetes API 行为，不意味着必须部署在 control-plane Node。</p></div>
         </details>
-        <details class="qa">
-          <summary><span class="q-num">Q25</span>组件之间为什么大量使用 List-Watch 而不是直接 RPC？</summary>
+        <details class="qa k8s-core">
+          <summary><span class="q-num">K07</span>组件之间为什么大量使用 List-Watch 而不是直接 RPC？</summary>
           <div class="answer"><p>组件围绕 apiserver 中的持久化期望状态异步协作，可独立重启、重试和水平扩展；List 提供初始快照，Watch 提供增量变化。</p><p class="key">Informer 是建立在 List-Watch 之上的缓存、索引和事件分发封装。</p></div>
         </details>
-        <details class="qa">
-          <summary><span class="q-num">Q26</span>etcd 故障时已运行 Pod 会立即停止吗？</summary>
+        <details class="qa k8s-core">
+          <summary><span class="q-num">K08</span>etcd 故障时已运行 Pod 会立即停止吗？</summary>
           <div class="answer"><p>通常不会。节点上的现有容器继续运行，但 API 写入、调度、控制器收敛与状态更新受阻；控制面恢复后再继续同步。</p><p class="key">etcd 存储控制面状态，不在业务数据包和容器进程的运行主路径上。</p></div>
         </details>
       </div>
@@ -872,12 +872,24 @@ GET /apis/apps.example.com/v1/namespaces/default/myapps?watch=true&resourceVersi
 
   <footer>
     <div class="shell footer-inner">
-      <span>K8s CRD Internals · 基于 apiextensions v1 + controller-runtime 主链</span>
-      <span>集群版本与 webhook 行为请以官方文档与所用 Kubebuilder 版本为准</span>
+      <span>Kubernetes Internals · 整体架构优先，CRD / Operator 作为扩展实现</span>
+      <span>组件行为与接口请以所用 Kubernetes、运行时及 Kubebuilder 版本为准</span>
     </div>
   </footer>
 
   <script>
+    // 内容顺序：先建立 Kubernetes 整体架构，再进入 CRD 的具体实现。
+    const main = document.querySelector("main");
+    const k8sInternals = document.getElementById("k8s-internals");
+    const crdArchitecture = document.getElementById("architecture");
+    main.insertBefore(k8sInternals, crdArchitecture);
+
+    // 面试题同样先展示 Kubernetes 架构题，再展示 CRD / Operator 实现题。
+    const interviewGrid = document.querySelector("#interview .interview-grid");
+    [...interviewGrid.querySelectorAll(".k8s-core")].reverse().forEach(
+      item => interviewGrid.insertBefore(item, interviewGrid.firstChild)
+    );
+
     const details = {
       kubectl: ["客户端 · USER-FACING", "kubectl", "kubeconfig + discovery", "解析 manifest，协商 API 版本，经 REST 与 apiserver 交互；本身不运行 Reconcile。", "apply/get/patch/describe", "HTTPS REST → kube-apiserver", "JSON/Protobuf；Token 或客户端证书", "<code>GET /apis</code> · CRUD on GVR", "Server-side apply 需理解 fieldManager；写 status 需对应 RBAC。"],
       client: ["客户端库", "client-go / controller-runtime Client", "typed · dynamic · cache reader", "封装 REST 调用；controller-runtime 在 Reconcile 中优先从 cache 读。", "Go struct · unstructured", "apiserver REST", "Scheme 注册 GVK ↔ Go type", "<code>Get</code> · <code>List</code> · <code>Patch</code> · <code>Status().Update</code>", "dynamic client 适合无 Go 类型的 CR；生产 Operator 多用 typed + Scheme。"],
