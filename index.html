@@ -306,24 +306,32 @@
     .informer-stage .stage-num { color: var(--cyan); font: 700 9px/1 ui-monospace, SFMono-Regular, Menlo, monospace; }
     .informer-stage b { display: block; margin-top: 9px; font-size: 12px; }
     .informer-stage small { display: block; margin-top: 7px; color: var(--muted); font-size: 10px; line-height: 1.45; }
-    .pipeline-explainer {
-      display: grid; gap: 14px; margin-bottom: 18px; padding: 18px;
+    .informer-flow {
+      margin-bottom: 18px; padding: 18px; overflow-x: auto;
       border: 1px solid var(--line); border-radius: var(--radius);
       background: rgba(10,18,32,.8); box-shadow: var(--shadow);
     }
-    .pipeline-lane {
-      display: grid; grid-template-columns: 150px 1fr; gap: 14px; align-items: stretch;
+    .informer-flow svg { display: block; width: 100%; min-width: 900px; height: auto; }
+    .flow-node rect { fill: #060d18; stroke: var(--line); stroke-width: 2; }
+    .flow-node .node-step { fill: var(--cyan); font: 700 12px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .flow-node .node-title { fill: var(--text); font: 700 16px Inter, ui-sans-serif, system-ui, sans-serif; }
+    .flow-node .node-subtitle { fill: var(--muted); font: 12px Inter, ui-sans-serif, system-ui, sans-serif; }
+    .flow-node.controller rect { stroke: var(--yellow); }
+    .flow-node.controller .node-step { fill: var(--yellow); }
+    .flow-line { fill: none; stroke: var(--cyan); stroke-width: 2.5; }
+    .flow-line.controller { stroke: var(--yellow); }
+    .flow-line.read { stroke: var(--green); stroke-dasharray: 8 6; }
+    .flow-line.write { stroke: var(--orange); stroke-dasharray: 8 6; }
+    .flow-label {
+      fill: var(--muted); font: 700 11px ui-monospace, SFMono-Regular, Menlo, monospace;
+      paint-order: stroke; stroke: var(--panel); stroke-width: 5px; stroke-linejoin: round;
     }
-    .pipeline-lane-title {
-      display: flex; flex-direction: column; justify-content: center; padding: 14px;
-      border: 1px solid var(--line); border-radius: 10px; background: #060d18;
-    }
-    .pipeline-lane-title span { color: var(--cyan); font: 700 10px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
-    .pipeline-lane-title b { margin-top: 6px; font-size: 15px; }
-    .pipeline-lane-title small { margin-top: 6px; color: var(--muted); line-height: 1.45; }
-    .pipeline-track { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; }
-    .pipeline-track .informer-stage { min-height: 108px; }
-    .pipeline-divider { height: 1px; background: var(--line); }
+    .flow-legend { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 14px; color: var(--muted); font-size: 12px; }
+    .flow-legend span { display: inline-flex; align-items: center; gap: 7px; }
+    .flow-legend i { width: 24px; height: 2px; background: var(--cyan); }
+    .flow-legend .controller { background: var(--yellow); }
+    .flow-legend .read { background: repeating-linear-gradient(90deg, var(--green) 0 6px, transparent 6px 10px); }
+    .flow-legend .write { background: repeating-linear-gradient(90deg, var(--orange) 0 6px, transparent 6px 10px); }
     .queue-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
     .queue-card {
       padding: 18px; border: 1px solid var(--line); border-radius: var(--radius);
@@ -332,19 +340,6 @@
     .queue-card h3 { margin: 0 0 10px; font-size: 17px; }
     .queue-card p { margin: 7px 0 0; color: var(--muted); line-height: 1.65; }
     .queue-card code { color: var(--cyan); }
-    .event-walkthrough {
-      display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin: 18px 0;
-    }
-    .event-step {
-      position: relative; padding: 14px 11px; border: 1px solid var(--line);
-      border-radius: 10px; background: rgba(6,13,24,.75);
-    }
-    .event-step:not(:last-child)::after {
-      content: "→"; position: absolute; top: 50%; right: -8px; z-index: 2;
-      transform: translate(50%,-50%); color: var(--yellow); font-weight: 800;
-    }
-    .event-step b { display: block; color: var(--yellow); font-size: 12px; }
-    .event-step small { display: block; margin-top: 7px; color: var(--muted); line-height: 1.45; }
     .informer-deep-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 18px; }
     .informer-panel {
       padding: 22px; border: 1px solid var(--line); border-radius: var(--radius);
@@ -433,18 +428,13 @@
       .relation-grid { grid-template-columns: 1fr; }
       .informer-pipeline { grid-template-columns: repeat(2, 1fr); }
       .informer-stage:not(:last-child)::after { display: none; }
-      .pipeline-lane { grid-template-columns: 1fr; }
-      .pipeline-track { grid-template-columns: repeat(2, 1fr); }
-      .pipeline-track .informer-stage::after { display: none; }
-      .event-walkthrough { grid-template-columns: repeat(2, 1fr); }
-      .event-step:not(:last-child)::after { display: none; }
       .informer-deep-grid { grid-template-columns: 1fr; }
       .pitfall-grid { grid-template-columns: 1fr 1fr; }
       .footer-inner { flex-direction: column; }
     }
     @media (max-width: 620px) {
       .component-grid, .call-path, .informer-pipeline, .pitfall-grid { grid-template-columns: 1fr; }
-      .pipeline-track, .queue-compare, .event-walkthrough { grid-template-columns: 1fr; }
+      .queue-compare { grid-template-columns: 1fr; }
       .mechanism-item { grid-template-columns: 1fr; }
       .chain-step { grid-template-columns: 1fr; }
       .chain-index { min-height: auto; padding-bottom: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
@@ -1075,31 +1065,95 @@ Service VIP → EndpointSlice → Pod IP:80</pre>
         <p class="section-note">Informer 不是 Watch 的别名。它在 List-Watch 之上增加自动重连、本地缓存、索引、事件分发与共享机制，是 Kubernetes Controller 的核心读模型。</p>
       </div>
 
-      <div class="pipeline-explainer" aria-label="Informer 的两条管道">
-        <div class="pipeline-lane">
-          <div class="pipeline-lane-title"><span>DATA PATH</span><b>① 同步本地缓存</b><small>目标是让 Indexer 尽量接近 apiserver 中的最新状态。</small></div>
-          <div class="pipeline-track">
-            <div class="informer-stage"><span class="stage-num">SOURCE</span><b>kube-apiserver</b><small>List 给出全量快照和 resourceVersion；Watch 从该版本继续给增量。</small></div>
-            <div class="informer-stage"><span class="stage-num">CONNECT</span><b>Reflector</b><small>通过 ListWatcher 执行 ListAndWatch，并处理断线重连与重新 List。</small></div>
-            <div class="informer-stage"><span class="stage-num">BUFFER</span><b>DeltaFIFO</b><small>按对象 key 暂存 Added、Updated、Deleted、Replaced、Sync 等 Delta。</small></div>
-            <div class="informer-stage"><span class="stage-num">APPLY</span><b>HandleDeltas</b><small>逐个消费 Delta：先更新 Indexer，再发出相应的 Add/Update/Delete 通知。</small></div>
-            <div class="informer-stage"><span class="stage-num">CACHE</span><b>Indexer / Lister</b><small>保存对象最新快照和索引；Lister 与缓存型 client 从这里读取。</small></div>
-          </div>
+      <div class="informer-flow">
+        <div class="flow-legend" aria-hidden="true">
+          <span><i></i>对象与事件向前流动</span>
+          <span><i class="controller"></i>Controller 调度</span>
+          <span><i class="read"></i>Reconcile 读缓存</span>
+          <span><i class="write"></i>Reconcile 写 API</span>
         </div>
-        <div class="pipeline-divider"></div>
-        <div class="pipeline-lane">
-          <div class="pipeline-lane-title"><span>SIGNAL PATH</span><b>② 触发业务重算</b><small>目标不是保存每条事件，而是提醒某个 key 需要再次对齐。</small></div>
-          <div class="pipeline-track">
-            <div class="informer-stage"><span class="stage-num">FAN-OUT</span><b>SharedProcessor</b><small>把缓存变更通知分发给多个 ResourceEventHandler。</small></div>
-            <div class="informer-stage"><span class="stage-num">MAP</span><b>EventHandler</b><small>过滤事件并映射为 key；通常是 namespace/name，不在这里做耗时业务。</small></div>
-            <div class="informer-stage"><span class="stage-num">SCHEDULE</span><b>WorkQueue</b><small>对 key 去重；失败时限速退避，处理期间再变化则安排再处理一次。</small></div>
-            <div class="informer-stage"><span class="stage-num">CONSUME</span><b>Worker</b><small>从队列取 key，调用 syncHandler 或 Reconcile；完成后 Done / Forget。</small></div>
-            <div class="informer-stage"><span class="stage-num">CONVERGE</span><b>Reconciler</b><small>拿 key 从 Cache 重新读取最新对象，比较期望与现状并写回 API。</small></div>
-          </div>
-        </div>
+        <svg viewBox="0 0 1300 520" role="img" aria-labelledby="informer-flow-title informer-flow-desc">
+          <title id="informer-flow-title">从 List-Watch 到 Reconcile 的完整闭环</title>
+          <desc id="informer-flow-desc">apiserver 的对象经 Reflector、DeltaFIFO 和 HandleDeltas 同步到 Indexer，同时通知 Handler 将 key 放入 WorkQueue。Worker 调用 Reconcile，Reconcile 读取 Indexer 并将收敛结果写回 apiserver。</desc>
+          <defs>
+            <marker id="arrow-cyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--cyan)"></path></marker>
+            <marker id="arrow-yellow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--yellow)"></path></marker>
+            <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--green)"></path></marker>
+            <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--orange)"></path></marker>
+          </defs>
+
+          <path class="flow-line" d="M250 92 H330" marker-end="url(#arrow-cyan)"></path>
+          <path class="flow-line" d="M540 92 H620" marker-end="url(#arrow-cyan)"></path>
+          <path class="flow-line" d="M830 92 H910" marker-end="url(#arrow-cyan)"></path>
+          <path class="flow-line" d="M1015 134 V174 H865 V205" marker-end="url(#arrow-cyan)"></path>
+          <path class="flow-line" d="M1080 134 V174 H1155 V205" marker-end="url(#arrow-cyan)"></path>
+          <path class="flow-line controller" d="M1155 289 V350" marker-end="url(#arrow-yellow)"></path>
+          <path class="flow-line controller" d="M1040 392 H900" marker-end="url(#arrow-yellow)"></path>
+          <path class="flow-line read" d="M795 350 V289" marker-end="url(#arrow-green)"></path>
+          <path class="flow-line write" d="M650 392 H150 V134" marker-end="url(#arrow-orange)"></path>
+
+          <text class="flow-label" x="271" y="79">LIST + WATCH</text>
+          <text class="flow-label" x="558" y="79">DELTA</text>
+          <text class="flow-label" x="850" y="79">POP</text>
+          <text class="flow-label" x="850" y="166">先更新缓存</text>
+          <text class="flow-label" x="1088" y="166">再发通知</text>
+          <text class="flow-label" x="1168" y="326">namespace/name</text>
+          <text class="flow-label" x="923" y="379">取 key</text>
+          <text class="flow-label" x="806" y="325">CACHE GET</text>
+          <text class="flow-label" x="345" y="379">CREATE / PATCH / STATUS</text>
+
+          <g class="flow-node" transform="translate(40 50)">
+            <rect width="210" height="84" rx="12"></rect>
+            <text class="node-step" x="16" y="23">1 · SOURCE</text>
+            <text class="node-title" x="16" y="48">kube-apiserver</text>
+            <text class="node-subtitle" x="16" y="68">对象真实来源</text>
+          </g>
+          <g class="flow-node" transform="translate(330 50)">
+            <rect width="210" height="84" rx="12"></rect>
+            <text class="node-step" x="16" y="23">2 · CONNECT</text>
+            <text class="node-title" x="16" y="48">Reflector</text>
+            <text class="node-subtitle" x="16" y="68">ListWatcher · 重连</text>
+          </g>
+          <g class="flow-node" transform="translate(620 50)">
+            <rect width="210" height="84" rx="12"></rect>
+            <text class="node-step" x="16" y="23">3 · BUFFER</text>
+            <text class="node-title" x="16" y="48">DeltaFIFO</text>
+            <text class="node-subtitle" x="16" y="68">按 key 暂存 Deltas</text>
+          </g>
+          <g class="flow-node" transform="translate(910 50)">
+            <rect width="210" height="84" rx="12"></rect>
+            <text class="node-step" x="16" y="23">4 · APPLY</text>
+            <text class="node-title" x="16" y="48">HandleDeltas</text>
+            <text class="node-subtitle" x="16" y="68">一次消费，两路输出</text>
+          </g>
+          <g class="flow-node" transform="translate(760 205)">
+            <rect width="210" height="84" rx="12"></rect>
+            <text class="node-step" x="16" y="23">5A · CACHE</text>
+            <text class="node-title" x="16" y="48">Indexer / Lister</text>
+            <text class="node-subtitle" x="16" y="68">保存最新对象快照</text>
+          </g>
+          <g class="flow-node" transform="translate(1040 205)">
+            <rect width="230" height="84" rx="12"></rect>
+            <text class="node-step" x="16" y="23">5B · NOTIFY</text>
+            <text class="node-title" x="16" y="48">Processor / Handler</text>
+            <text class="node-subtitle" x="16" y="68">事件映射为 key</text>
+          </g>
+          <g class="flow-node controller" transform="translate(1040 350)">
+            <rect width="230" height="84" rx="12"></rect>
+            <text class="node-step" x="16" y="23">6 · SCHEDULE</text>
+            <text class="node-title" x="16" y="48">WorkQueue</text>
+            <text class="node-subtitle" x="16" y="68">key 去重 · 失败退避</text>
+          </g>
+          <g class="flow-node controller" transform="translate(650 350)">
+            <rect width="250" height="84" rx="12"></rect>
+            <text class="node-step" x="16" y="23">7 · CONVERGE</text>
+            <text class="node-title" x="16" y="48">Worker → Reconcile</text>
+            <text class="node-subtitle" x="16" y="68">读最新状态并执行收敛</text>
+          </g>
+        </svg>
       </div>
 
-      <div class="callout"><strong>先抓住边界：</strong>上面一条是<strong>数据通路</strong>，把 apiserver 的对象同步成可查询的本地快照；下面一条是<strong>信号通路</strong>，只把“哪个 key 可能需要重算”交给 Controller。事件是闹钟，不是业务事实；Reconcile 的事实来源是它执行时重新读到的最新对象。</div>
+      <div class="callout"><strong>沿箭头读：</strong>前半段把 API 对象同步进 Cache；<code>HandleDeltas</code> 在更新 Cache 后通知 Handler；Handler 只把 key 放进 WorkQueue；Reconcile 取 key 后回读 Cache，再把收敛结果写回 apiserver，形成闭环。</div>
 
       <div class="queue-compare">
         <article class="queue-card">
@@ -1116,19 +1170,7 @@ Service VIP → EndpointSlice → Pod IP:80</pre>
         </article>
       </div>
 
-      <article class="informer-panel">
-        <h3>一次 <code>MyApp/default/demo</code> 更新到底发生什么</h3>
-        <div class="event-walkthrough">
-          <div class="event-step"><b>1 · 持久化</b><small>用户 PATCH MyApp；apiserver 写入 etcd，resourceVersion 从 41 变成 42。</small></div>
-          <div class="event-step"><b>2 · Watch</b><small>Reflector 收到 MODIFIED，转换成 Updated Delta 放入 DeltaFIFO。</small></div>
-          <div class="event-step"><b>3 · 更新缓存</b><small>HandleDeltas 把 rv=42 的对象写入 Indexer。</small></div>
-          <div class="event-step"><b>4 · 发通知</b><small>SharedProcessor 调用已注册 Handler 的 UpdateFunc。</small></div>
-          <div class="event-step"><b>5 · key 入队</b><small>Handler 只生成 default/demo；WorkQueue 对重复 key 去重。</small></div>
-          <div class="event-step"><b>6 · 重新读取</b><small>worker 取出 key；Reconcile 从 Cache Get，可能已读到比 42 更新的版本。</small></div>
-          <div class="event-step"><b>7 · 状态收敛</b><small>按当前 spec 创建或更新子资源、回写 status；失败则限速重试。</small></div>
-        </div>
-        <div class="callout"><strong>为什么队列里只放 key？</strong>假设 rv=42、43、44 在 worker 执行前连续到达，逐条保存旧对象没有意义。队列只需保留“<code>default/demo</code> 要处理”，Reconcile 一次读取 rv=44，直接向最新期望状态收敛。</div>
-      </article>
+      <div class="callout"><strong>为什么队列里只放 key？</strong>假设 rv=42、43、44 在 worker 执行前连续到达，队列只需保留“<code>default/demo</code> 要处理”。Reconcile 一次读取最新的 rv=44，直接向最新期望状态收敛。</div>
 
       <div class="informer-deep-grid" style="margin-top:18px">
         <article class="informer-panel">
