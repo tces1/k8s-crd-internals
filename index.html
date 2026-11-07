@@ -306,6 +306,45 @@
     .informer-stage .stage-num { color: var(--cyan); font: 700 9px/1 ui-monospace, SFMono-Regular, Menlo, monospace; }
     .informer-stage b { display: block; margin-top: 9px; font-size: 12px; }
     .informer-stage small { display: block; margin-top: 7px; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .pipeline-explainer {
+      display: grid; gap: 14px; margin-bottom: 18px; padding: 18px;
+      border: 1px solid var(--line); border-radius: var(--radius);
+      background: rgba(10,18,32,.8); box-shadow: var(--shadow);
+    }
+    .pipeline-lane {
+      display: grid; grid-template-columns: 150px 1fr; gap: 14px; align-items: stretch;
+    }
+    .pipeline-lane-title {
+      display: flex; flex-direction: column; justify-content: center; padding: 14px;
+      border: 1px solid var(--line); border-radius: 10px; background: #060d18;
+    }
+    .pipeline-lane-title span { color: var(--cyan); font: 700 10px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .pipeline-lane-title b { margin-top: 6px; font-size: 15px; }
+    .pipeline-lane-title small { margin-top: 6px; color: var(--muted); line-height: 1.45; }
+    .pipeline-track { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; }
+    .pipeline-track .informer-stage { min-height: 108px; }
+    .pipeline-divider { height: 1px; background: var(--line); }
+    .queue-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+    .queue-card {
+      padding: 18px; border: 1px solid var(--line); border-radius: var(--radius);
+      background: rgba(10,18,32,.8);
+    }
+    .queue-card h3 { margin: 0 0 10px; font-size: 17px; }
+    .queue-card p { margin: 7px 0 0; color: var(--muted); line-height: 1.65; }
+    .queue-card code { color: var(--cyan); }
+    .event-walkthrough {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin: 18px 0;
+    }
+    .event-step {
+      position: relative; padding: 14px 11px; border: 1px solid var(--line);
+      border-radius: 10px; background: rgba(6,13,24,.75);
+    }
+    .event-step:not(:last-child)::after {
+      content: "→"; position: absolute; top: 50%; right: -8px; z-index: 2;
+      transform: translate(50%,-50%); color: var(--yellow); font-weight: 800;
+    }
+    .event-step b { display: block; color: var(--yellow); font-size: 12px; }
+    .event-step small { display: block; margin-top: 7px; color: var(--muted); line-height: 1.45; }
     .informer-deep-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 18px; }
     .informer-panel {
       padding: 22px; border: 1px solid var(--line); border-radius: var(--radius);
@@ -394,12 +433,18 @@
       .relation-grid { grid-template-columns: 1fr; }
       .informer-pipeline { grid-template-columns: repeat(2, 1fr); }
       .informer-stage:not(:last-child)::after { display: none; }
+      .pipeline-lane { grid-template-columns: 1fr; }
+      .pipeline-track { grid-template-columns: repeat(2, 1fr); }
+      .pipeline-track .informer-stage::after { display: none; }
+      .event-walkthrough { grid-template-columns: repeat(2, 1fr); }
+      .event-step:not(:last-child)::after { display: none; }
       .informer-deep-grid { grid-template-columns: 1fr; }
       .pitfall-grid { grid-template-columns: 1fr 1fr; }
       .footer-inner { flex-direction: column; }
     }
     @media (max-width: 620px) {
       .component-grid, .call-path, .informer-pipeline, .pitfall-grid { grid-template-columns: 1fr; }
+      .pipeline-track, .queue-compare, .event-walkthrough { grid-template-columns: 1fr; }
       .mechanism-item { grid-template-columns: 1fr; }
       .chain-step { grid-template-columns: 1fr; }
       .chain-index { min-height: auto; padding-bottom: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
@@ -1030,18 +1075,60 @@ Service VIP → EndpointSlice → Pod IP:80</pre>
         <p class="section-note">Informer 不是 Watch 的别名。它在 List-Watch 之上增加自动重连、本地缓存、索引、事件分发与共享机制，是 Kubernetes Controller 的核心读模型。</p>
       </div>
 
-      <div class="informer-pipeline" aria-label="Informer 完整数据流">
-        <div class="informer-stage"><span class="stage-num">01 · SOURCE</span><b>kube-apiserver</b><small>List 返回初始快照与 resourceVersion；Watch 返回后续增量事件。</small></div>
-        <div class="informer-stage"><span class="stage-num">02 · CONNECT</span><b>ListWatcher</b><small>封装 ListFunc / WatchFunc，指定 GVR、namespace、label/field selector。</small></div>
-        <div class="informer-stage"><span class="stage-num">03 · REFLECT</span><b>Reflector</b><small>执行 ListAndWatch；把服务端状态持续“反射”到本地 Store。</small></div>
-        <div class="informer-stage"><span class="stage-num">04 · BUFFER</span><b>DeltaFIFO</b><small>按 key 累积 Added、Updated、Deleted、Replaced、Sync 变化。</small></div>
-        <div class="informer-stage"><span class="stage-num">05 · CACHE</span><b>Indexer</b><small>保存对象最新快照，并维护 namespace 等二级索引。</small></div>
-        <div class="informer-stage"><span class="stage-num">06 · FAN-OUT</span><b>SharedProcessor</b><small>向多个 ResourceEventHandler 分发 Add、Update、Delete 通知。</small></div>
-        <div class="informer-stage"><span class="stage-num">07 · QUEUE</span><b>WorkQueue</b><small>Handler 只提取 namespace/name 入队；去重并做失败退避。</small></div>
-        <div class="informer-stage"><span class="stage-num">08 · CONSUME</span><b>Reconciler</b><small>按 key 从 Lister/Cache 读取最新对象，执行幂等状态收敛。</small></div>
+      <div class="pipeline-explainer" aria-label="Informer 的两条管道">
+        <div class="pipeline-lane">
+          <div class="pipeline-lane-title"><span>DATA PATH</span><b>① 同步本地缓存</b><small>目标是让 Indexer 尽量接近 apiserver 中的最新状态。</small></div>
+          <div class="pipeline-track">
+            <div class="informer-stage"><span class="stage-num">SOURCE</span><b>kube-apiserver</b><small>List 给出全量快照和 resourceVersion；Watch 从该版本继续给增量。</small></div>
+            <div class="informer-stage"><span class="stage-num">CONNECT</span><b>Reflector</b><small>通过 ListWatcher 执行 ListAndWatch，并处理断线重连与重新 List。</small></div>
+            <div class="informer-stage"><span class="stage-num">BUFFER</span><b>DeltaFIFO</b><small>按对象 key 暂存 Added、Updated、Deleted、Replaced、Sync 等 Delta。</small></div>
+            <div class="informer-stage"><span class="stage-num">APPLY</span><b>HandleDeltas</b><small>逐个消费 Delta：先更新 Indexer，再发出相应的 Add/Update/Delete 通知。</small></div>
+            <div class="informer-stage"><span class="stage-num">CACHE</span><b>Indexer / Lister</b><small>保存对象最新快照和索引；Lister 与缓存型 client 从这里读取。</small></div>
+          </div>
+        </div>
+        <div class="pipeline-divider"></div>
+        <div class="pipeline-lane">
+          <div class="pipeline-lane-title"><span>SIGNAL PATH</span><b>② 触发业务重算</b><small>目标不是保存每条事件，而是提醒某个 key 需要再次对齐。</small></div>
+          <div class="pipeline-track">
+            <div class="informer-stage"><span class="stage-num">FAN-OUT</span><b>SharedProcessor</b><small>把缓存变更通知分发给多个 ResourceEventHandler。</small></div>
+            <div class="informer-stage"><span class="stage-num">MAP</span><b>EventHandler</b><small>过滤事件并映射为 key；通常是 namespace/name，不在这里做耗时业务。</small></div>
+            <div class="informer-stage"><span class="stage-num">SCHEDULE</span><b>WorkQueue</b><small>对 key 去重；失败时限速退避，处理期间再变化则安排再处理一次。</small></div>
+            <div class="informer-stage"><span class="stage-num">CONSUME</span><b>Worker</b><small>从队列取 key，调用 syncHandler 或 Reconcile；完成后 Done / Forget。</small></div>
+            <div class="informer-stage"><span class="stage-num">CONVERGE</span><b>Reconciler</b><small>拿 key 从 Cache 重新读取最新对象，比较期望与现状并写回 API。</small></div>
+          </div>
+        </div>
       </div>
 
-      <div class="callout"><strong>核心结论：</strong><code>List-Watch</code> 负责同步数据，<code>Informer</code> 负责缓存与事件分发，<code>WorkQueue</code> 负责调度 key，<code>Reconcile</code> 负责业务收敛。事件只是“可能需要重算”的提示，真正的事实来自缓存中的最新对象。</div>
+      <div class="callout"><strong>先抓住边界：</strong>上面一条是<strong>数据通路</strong>，把 apiserver 的对象同步成可查询的本地快照；下面一条是<strong>信号通路</strong>，只把“哪个 key 可能需要重算”交给 Controller。事件是闹钟，不是业务事实；Reconcile 的事实来源是它执行时重新读到的最新对象。</div>
+
+      <div class="queue-compare">
+        <article class="queue-card">
+          <h3>DeltaFIFO：服务于缓存同步</h3>
+          <p><strong>内容：</strong>同一对象 key 对应的一组 Delta，例如 <code>Added / Updated / Deleted</code>。</p>
+          <p><strong>消费者：</strong>SharedIndexInformer 的处理循环。它消费 Delta、更新 Indexer，并触发 Handler 通知。</p>
+          <p><strong>不是：</strong>它不是 Reconcile 的任务队列，也不负责业务失败重试。</p>
+        </article>
+        <article class="queue-card">
+          <h3>WorkQueue：服务于业务调度</h3>
+          <p><strong>内容：</strong>通常只有 <code>namespace/name</code> key，不保存事件快照或完整对象。</p>
+          <p><strong>消费者：</strong>Controller worker。worker 取 key 后，再从 Cache 读取对象当前版本。</p>
+          <p><strong>价值：</strong>合并同一 key 的事件风暴，并为失败提供限速退避。</p>
+        </article>
+      </div>
+
+      <article class="informer-panel">
+        <h3>一次 <code>MyApp/default/demo</code> 更新到底发生什么</h3>
+        <div class="event-walkthrough">
+          <div class="event-step"><b>1 · 持久化</b><small>用户 PATCH MyApp；apiserver 写入 etcd，resourceVersion 从 41 变成 42。</small></div>
+          <div class="event-step"><b>2 · Watch</b><small>Reflector 收到 MODIFIED，转换成 Updated Delta 放入 DeltaFIFO。</small></div>
+          <div class="event-step"><b>3 · 更新缓存</b><small>HandleDeltas 把 rv=42 的对象写入 Indexer。</small></div>
+          <div class="event-step"><b>4 · 发通知</b><small>SharedProcessor 调用已注册 Handler 的 UpdateFunc。</small></div>
+          <div class="event-step"><b>5 · key 入队</b><small>Handler 只生成 default/demo；WorkQueue 对重复 key 去重。</small></div>
+          <div class="event-step"><b>6 · 重新读取</b><small>worker 取出 key；Reconcile 从 Cache Get，可能已读到比 42 更新的版本。</small></div>
+          <div class="event-step"><b>7 · 状态收敛</b><small>按当前 spec 创建或更新子资源、回写 status；失败则限速重试。</small></div>
+        </div>
+        <div class="callout"><strong>为什么队列里只放 key？</strong>假设 rv=42、43、44 在 worker 执行前连续到达，逐条保存旧对象没有意义。队列只需保留“<code>default/demo</code> 要处理”，Reconcile 一次读取 rv=44，直接向最新期望状态收敛。</div>
+      </article>
 
       <div class="informer-deep-grid" style="margin-top:18px">
         <article class="informer-panel">
