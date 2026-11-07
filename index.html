@@ -290,6 +290,20 @@
       display: block; margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--line);
       color: var(--cyan); font: 10px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
     }
+    .consistency-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .watch-recovery { grid-column: auto; }
+    .watch-recovery > p { margin-bottom: 12px; }
+    .recovery-steps { display: grid; gap: 8px; }
+    .recovery-step {
+      display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding: 10px;
+      border: 1px solid var(--line); border-radius: 8px; background: rgba(6,13,24,.7);
+    }
+    .recovery-step b {
+      display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+      color: var(--bg); background: var(--cyan); font: 700 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .recovery-step p { margin: 0; }
+    .recovery-step code { color: var(--cyan); }
     .informer-pipeline {
       display: grid; grid-template-columns: repeat(8, 1fr); gap: 15px; margin-bottom: 18px;
       padding: 18px; border: 1px solid var(--line); border-radius: var(--radius);
@@ -311,27 +325,8 @@
       border: 1px solid var(--line); border-radius: var(--radius);
       background: rgba(10,18,32,.8); box-shadow: var(--shadow);
     }
-    .informer-flow svg { display: block; width: 100%; min-width: 900px; height: auto; }
-    .flow-node rect { fill: #060d18; stroke: var(--line); stroke-width: 2; }
-    .flow-node .node-step { fill: var(--cyan); font: 700 14px ui-monospace, SFMono-Regular, Menlo, monospace; }
-    .flow-node .node-title { fill: var(--text); font: 700 18px Inter, ui-sans-serif, system-ui, sans-serif; }
-    .flow-node .node-subtitle { fill: var(--muted); font: 14px Inter, ui-sans-serif, system-ui, sans-serif; }
-    .flow-node.controller rect { stroke: var(--yellow); }
-    .flow-node.controller .node-step { fill: var(--yellow); }
-    .flow-line { fill: none; stroke: var(--cyan); stroke-width: 2.5; }
-    .flow-line.controller { stroke: var(--yellow); }
-    .flow-line.read { stroke: var(--green); stroke-dasharray: 8 6; }
-    .flow-line.write { stroke: var(--orange); stroke-dasharray: 8 6; }
-    .flow-label {
-      fill: var(--muted); font: 700 13px ui-monospace, SFMono-Regular, Menlo, monospace;
-      paint-order: stroke; stroke: var(--panel); stroke-width: 5px; stroke-linejoin: round;
-    }
-    .flow-legend { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 14px; color: var(--muted); font-size: 14px; }
-    .flow-legend span { display: inline-flex; align-items: center; gap: 7px; }
-    .flow-legend i { width: 24px; height: 2px; background: var(--cyan); }
-    .flow-legend .controller { background: var(--yellow); }
-    .flow-legend .read { background: repeating-linear-gradient(90deg, var(--green) 0 6px, transparent 6px 10px); }
-    .flow-legend .write { background: repeating-linear-gradient(90deg, var(--orange) 0 6px, transparent 6px 10px); }
+    .informer-flow .mermaid { display: flex; justify-content: flex-start; min-width: 900px; }
+    .informer-flow .mermaid svg { display: block; width: min(100%, 1300px) !important; max-width: 1300px !important; height: auto; overflow: visible !important; }
     .queue-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
     .queue-card {
       padding: 18px; border: 1px solid var(--line); border-radius: var(--radius);
@@ -348,11 +343,34 @@
     .informer-panel h3 { margin: 0 0 15px; font-size: 20px; letter-spacing: -.03em; }
     .mechanism-list { display: grid; gap: 9px; }
     .mechanism-item {
-      display: grid; grid-template-columns: 105px 1fr; gap: 13px; padding: 12px;
       border: 1px solid var(--line); border-radius: 9px; background: rgba(6,13,24,.75);
     }
-    .mechanism-item b { color: var(--cyan); font: 650 11px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
-    .mechanism-item p { margin: 0; color: #a8bdd8; font-size: 12px; }
+    div.mechanism-item {
+      display: grid; grid-template-columns: 125px 1fr; gap: 13px; padding: 13px;
+    }
+    div.mechanism-item b { color: var(--cyan); font: 650 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    div.mechanism-item p { margin: 0; color: #a8bdd8; font-size: 14px; }
+    .mechanism-item summary {
+      position: relative; display: grid; grid-template-columns: 125px 1fr; gap: 13px;
+      padding: 13px 42px 13px 13px; cursor: pointer; list-style: none;
+    }
+    .mechanism-item summary::-webkit-details-marker { display: none; }
+    .mechanism-item summary::after {
+      content: "+"; position: absolute; top: 50%; right: 14px; transform: translateY(-50%);
+      color: var(--cyan); font: 700 18px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .mechanism-item[open] summary::after { content: "−"; }
+    .mechanism-item[open] summary { border-bottom: 1px solid var(--line); }
+    .mechanism-item summary b { color: var(--cyan); font: 650 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .mechanism-item summary span { color: #a8bdd8; font-size: 14px; }
+    .mechanism-detail { display: grid; gap: 10px; padding: 14px; }
+    .mechanism-detail p { margin: 0; color: #a8bdd8; font-size: 14px; line-height: 1.65; }
+    .mechanism-detail strong { color: var(--text); }
+    .mechanism-sample {
+      margin: 0; padding: 12px; overflow-x: auto; white-space: pre;
+      border: 1px solid var(--line); border-radius: 8px; color: #c8e4ff; background: #030810;
+      font: 11px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
     .informer-code {
       margin: 0; min-height: 100%; padding: 16px; overflow-x: auto; white-space: pre;
       border: 1px solid #1e3352; border-radius: 11px; color: #c8e4ff; background: #030810;
@@ -396,8 +414,6 @@
     .relation-card .relation { font-size: 11.5px; }
     .informer-stage b { font-size: 14px; }
     .informer-stage small { font-size: 11.5px; }
-    .mechanism-item b { font-size: 12px; }
-    .mechanism-item p { font-size: 14px; }
     .informer-code { font-size: 11px; }
     .pitfall b { font-size: 14px; }
     .pitfall p { font-size: 13px; }
@@ -426,6 +442,7 @@
       .chain-example { grid-column: 1 / -1; }
       .chain-branch { grid-template-columns: 1fr; }
       .relation-grid { grid-template-columns: 1fr; }
+      .watch-recovery { grid-column: auto; }
       .informer-pipeline { grid-template-columns: repeat(2, 1fr); }
       .informer-stage:not(:last-child)::after { display: none; }
       .informer-deep-grid { grid-template-columns: 1fr; }
@@ -435,7 +452,8 @@
     @media (max-width: 620px) {
       .component-grid, .call-path, .informer-pipeline, .pitfall-grid { grid-template-columns: 1fr; }
       .queue-compare { grid-template-columns: 1fr; }
-      .mechanism-item { grid-template-columns: 1fr; }
+      div.mechanism-item { grid-template-columns: 1fr; gap: 5px; }
+      .mechanism-item summary { grid-template-columns: 1fr; gap: 5px; }
       .chain-step { grid-template-columns: 1fr; }
       .chain-index { min-height: auto; padding-bottom: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
     }
@@ -1066,94 +1084,37 @@ Service VIP → EndpointSlice → Pod IP:80</pre>
       </div>
 
       <div class="informer-flow">
-        <div class="flow-legend" aria-hidden="true">
-          <span><i></i>对象与事件向前流动</span>
-          <span><i class="controller"></i>Controller 调度</span>
-          <span><i class="read"></i>Reconcile 读缓存</span>
-          <span><i class="write"></i>Reconcile 写 API</span>
-        </div>
-        <svg viewBox="0 0 1300 520" role="img" aria-labelledby="informer-flow-title informer-flow-desc">
-          <title id="informer-flow-title">从 List-Watch 到 Reconcile 的完整闭环</title>
-          <desc id="informer-flow-desc">apiserver 的对象经 Reflector、DeltaFIFO 和 HandleDeltas 同步到 Indexer，同时通知 Handler 将 key 放入 WorkQueue。Worker 调用 Reconcile，Reconcile 读取 Indexer 并将收敛结果写回 apiserver。</desc>
-          <defs>
-            <marker id="arrow-cyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--cyan)"></path></marker>
-            <marker id="arrow-yellow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--yellow)"></path></marker>
-            <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--green)"></path></marker>
-            <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--orange)"></path></marker>
-          </defs>
+        <pre class="mermaid" aria-label="从 List-Watch 到 Reconcile 的完整闭环">
+sequenceDiagram
+  participant API as kube-apiserver
+  participant R as Reflector
+  participant DF as DeltaFIFO
+  participant SI as SharedIndexInformer
+  participant IDX as Indexer
+  participant SP as SharedProcessor
+  participant EH as ResourceEventHandler
+  participant WQ as RateLimiting WorkQueue
+  participant W as Controller Worker
+  participant REC as Reconciler
 
-          <path class="flow-line" d="M250 92 H330" marker-end="url(#arrow-cyan)"></path>
-          <path class="flow-line" d="M540 92 H620" marker-end="url(#arrow-cyan)"></path>
-          <path class="flow-line" d="M830 92 H910" marker-end="url(#arrow-cyan)"></path>
-          <path class="flow-line" d="M1015 134 V174 H865 V205" marker-end="url(#arrow-cyan)"></path>
-          <path class="flow-line" d="M1080 134 V174 H1155 V205" marker-end="url(#arrow-cyan)"></path>
-          <path class="flow-line controller" d="M1155 289 V350" marker-end="url(#arrow-yellow)"></path>
-          <path class="flow-line controller" d="M1040 392 H900" marker-end="url(#arrow-yellow)"></path>
-          <path class="flow-line read" d="M795 350 V289" marker-end="url(#arrow-green)"></path>
-          <path class="flow-line write" d="M650 392 H150 V134" marker-end="url(#arrow-orange)"></path>
-
-          <text class="flow-label" x="271" y="79">LIST + WATCH</text>
-          <text class="flow-label" x="558" y="79">DELTA</text>
-          <text class="flow-label" x="850" y="79">POP</text>
-          <text class="flow-label" x="850" y="166">先更新缓存</text>
-          <text class="flow-label" x="1088" y="166">再发通知</text>
-          <text class="flow-label" x="1168" y="326">namespace/name</text>
-          <text class="flow-label" x="923" y="379">取 key</text>
-          <text class="flow-label" x="806" y="325">CACHE GET</text>
-          <text class="flow-label" x="345" y="379">CREATE / PATCH / STATUS</text>
-
-          <g class="flow-node" transform="translate(40 50)">
-            <rect width="210" height="84" rx="12"></rect>
-            <text class="node-step" x="16" y="23">1 · SOURCE</text>
-            <text class="node-title" x="16" y="48">kube-apiserver</text>
-            <text class="node-subtitle" x="16" y="68">对象真实来源</text>
-          </g>
-          <g class="flow-node" transform="translate(330 50)">
-            <rect width="210" height="84" rx="12"></rect>
-            <text class="node-step" x="16" y="23">2 · CONNECT</text>
-            <text class="node-title" x="16" y="48">Reflector</text>
-            <text class="node-subtitle" x="16" y="68">ListWatcher · 重连</text>
-          </g>
-          <g class="flow-node" transform="translate(620 50)">
-            <rect width="210" height="84" rx="12"></rect>
-            <text class="node-step" x="16" y="23">3 · BUFFER</text>
-            <text class="node-title" x="16" y="48">DeltaFIFO</text>
-            <text class="node-subtitle" x="16" y="68">按 key 暂存 Deltas</text>
-          </g>
-          <g class="flow-node" transform="translate(910 50)">
-            <rect width="210" height="84" rx="12"></rect>
-            <text class="node-step" x="16" y="23">4 · APPLY</text>
-            <text class="node-title" x="16" y="48">HandleDeltas</text>
-            <text class="node-subtitle" x="16" y="68">一次消费，两路输出</text>
-          </g>
-          <g class="flow-node" transform="translate(760 205)">
-            <rect width="210" height="84" rx="12"></rect>
-            <text class="node-step" x="16" y="23">5A · CACHE</text>
-            <text class="node-title" x="16" y="48">Indexer / Lister</text>
-            <text class="node-subtitle" x="16" y="68">保存最新对象快照</text>
-          </g>
-          <g class="flow-node" transform="translate(1040 205)">
-            <rect width="230" height="84" rx="12"></rect>
-            <text class="node-step" x="16" y="23">5B · NOTIFY</text>
-            <text class="node-title" x="16" y="48">Processor / Handler</text>
-            <text class="node-subtitle" x="16" y="68">事件映射为 key</text>
-          </g>
-          <g class="flow-node controller" transform="translate(1040 350)">
-            <rect width="230" height="84" rx="12"></rect>
-            <text class="node-step" x="16" y="23">6 · SCHEDULE</text>
-            <text class="node-title" x="16" y="48">WorkQueue</text>
-            <text class="node-subtitle" x="16" y="68">key 去重 · 失败退避</text>
-          </g>
-          <g class="flow-node controller" transform="translate(650 350)">
-            <rect width="250" height="84" rx="12"></rect>
-            <text class="node-step" x="16" y="23">7 · CONVERGE</text>
-            <text class="node-title" x="16" y="48">Worker → Reconcile</text>
-            <text class="node-subtitle" x="16" y="68">读最新状态并执行收敛</text>
-          </g>
-        </svg>
+  API-->>R: List response + resourceVersion
+  R->>DF: Replace(initial objects)
+  API-->>R: Watch event
+  R->>DF: Add / Update / Delete
+  DF->>SI: Pop(Deltas)
+  SI->>IDX: HandleDeltas：更新对象快照
+  SI->>SP: HandleDeltas：发出 Notification
+  SP->>EH: OnAdd / OnUpdate / OnDelete
+  EH->>WQ: Add(namespace/name)
+  WQ->>W: Get() key
+  W->>REC: Reconcile(key)
+  REC->>IDX: Cache Get
+  IDX-->>REC: latest object
+  REC->>API: Create / Patch / Status Update
+        </pre>
       </div>
 
-      <div class="callout"><strong>沿箭头读：</strong>前半段把 API 对象同步进 Cache；<code>HandleDeltas</code> 在更新 Cache 后通知 Handler；Handler 只把 key 放进 WorkQueue；Reconcile 取 key 后回读 Cache，再把收敛结果写回 apiserver，形成闭环。</div>
+      <div class="callout"><strong>沿箭头读：</strong>Reflector 把 API 变化写入 DeltaFIFO；SharedIndexInformer 通过 <code>HandleDeltas</code> 更新 Indexer，并经 SharedProcessor 通知 ResourceEventHandler；Handler 把 key 加入 WorkQueue，Controller Worker 再调用 Reconciler 回读 Cache、写回 API。</div>
 
       <div class="queue-compare">
         <article class="queue-card">
@@ -1176,13 +1137,131 @@ Service VIP → EndpointSlice → Pod IP:80</pre>
         <article class="informer-panel">
           <h3>每个内部组件到底做什么</h3>
           <div class="mechanism-list">
-            <div class="mechanism-item"><b>ListWatcher</b><p>定义如何访问某类资源。第一次 List 建立全量基线，随后 Watch 从返回的 <code>resourceVersion</code> 继续消费增量。</p></div>
-            <div class="mechanism-item"><b>Reflector</b><p>长期运行 <code>ListAndWatch</code>。Watch 正常断开会重连；版本过旧出现 <code>410 Gone</code> 时重新 List，而不是让业务控制器处理连接恢复。</p></div>
-            <div class="mechanism-item"><b>DeltaFIFO</b><p>位于 Reflector 与 Informer 处理循环之间，按对象 key 聚合一组 Deltas。它不是 Reconcile 使用的业务 WorkQueue。</p></div>
-            <div class="mechanism-item"><b>Indexer</b><p>线程安全地保存每个 key 的最新对象。Lister 只读这个本地缓存；索引让控制器可按 namespace、owner 等条件快速查找。</p></div>
-            <div class="mechanism-item"><b>Processor</b><p>SharedInformer 的 fan-out 层。一个底层 List-Watch 和 Store 可以服务多个 Handler，避免每个 Controller 都向 apiserver 建连接。</p></div>
-            <div class="mechanism-item"><b>Handler</b><p><code>AddFunc/UpdateFunc/DeleteFunc</code> 不应执行耗时业务，只负责过滤事件、生成 key 并加入 WorkQueue。</p></div>
-            <div class="mechanism-item"><b>WorkQueue</b><p>用 dirty/processing 集合合并同一 key 的事件。处理期间再次变化会在 <code>Done</code> 后重新入队，保证最终还能再对齐一次。</p></div>
+            <details class="mechanism-item">
+              <summary><b>ListWatcher</b><span>定义 List 和 Watch 请求怎么发</span></summary>
+              <div class="mechanism-detail">
+                <p><strong>持有什么：</strong>主要持有 <code>ListFunc</code>、<code>WatchFunc</code> 以及 GVR、namespace、label/field selector 等查询条件；它本身不缓存对象。</p>
+                <p><strong>传出什么：</strong>List 返回全量对象和集合的 <code>resourceVersion</code>；Watch 返回从该版本之后开始的事件流。</p>
+                <pre class="mechanism-sample">List(options)
+→ PodList{
+    Items: [default/web, default/api],
+    ResourceVersion: "18421",
+  }
+
+Watch(options{ResourceVersion: "18421"})
+→ ADDED / MODIFIED / DELETED stream</pre>
+              </div>
+            </details>
+
+            <details class="mechanism-item">
+              <summary><b>Reflector</b><span>维持远端 API 到本地队列的持续同步</span></summary>
+              <div class="mechanism-detail">
+                <p><strong>持有什么：</strong>目标对象类型、目标 Store（通常是 DeltaFIFO）、最近同步到的 <code>resourceVersion</code>、当前 Watch 连接及重试状态。它不保存完整业务缓存。</p>
+                <p><strong>做什么：</strong>先 List 建立基线，再 Watch 增量；断线时重连，遇到 <code>410 Gone</code> 时重新 List。</p>
+                <pre class="mechanism-sample">lastSyncResourceVersion = "18421"
+watch event = {
+  Type: MODIFIED,
+  Object: Pod{Key:"default/web", RV:"18422"},
+}
+
+Reflector → DeltaFIFO.Update(pod)</pre>
+              </div>
+            </details>
+
+            <details class="mechanism-item">
+              <summary><b>DeltaFIFO</b><span>按 key 暂存对象发生过的变化</span></summary>
+              <div class="mechanism-detail">
+                <p><strong>存什么：</strong><code>items</code> 保存 key 到一组 Deltas 的映射，<code>queue</code> 保存待 Pop 的 key 顺序。同一对象短时间多次变化可累积为一组 Delta。</p>
+                <p><strong>注意：</strong>这里存的是供 Informer 更新缓存使用的变化，不是 Reconcile 的业务任务。</p>
+                <pre class="mechanism-sample">items["default/web"] = Deltas{
+  {Type: Updated, Object: Pod{RV:"18422"}},
+  {Type: Updated, Object: Pod{RV:"18423"}},
+}
+
+queue = ["default/web", "default/api"]</pre>
+              </div>
+            </details>
+
+            <details class="mechanism-item">
+              <summary><b>Indexer / Lister</b><span>保存对象最新快照并提供索引查询</span></summary>
+              <div class="mechanism-detail">
+                <p><strong>存什么：</strong><code>items</code> 中每个 key 只保留对象最新版本；<code>indices</code> 维护 namespace、owner 或自定义字段到 key 集合的反向索引。</p>
+                <p><strong>怎么读：</strong>Lister 只读这份进程内缓存，不会因为一次 <code>Get</code> 就请求 apiserver，因此读取是最终一致而非强一致。</p>
+                <pre class="mechanism-sample">items["default/web"] =
+  Pod{Name:"web", Namespace:"default", RV:"18423"}
+
+indices["namespace"]["default"] = {
+  "default/web",
+  "default/api",
+}</pre>
+              </div>
+            </details>
+
+            <details class="mechanism-item">
+              <summary><b>SharedProcessor</b><span>把一份缓存变化广播给多个 Listener</span></summary>
+              <div class="mechanism-detail">
+                <p><strong>持有什么：</strong>已注册的 Listener 列表；每个 Listener 内部有通知通道以及来不及消费时的 pending notifications。它保存的是待分发通知，不是资源真相。</p>
+                <p><strong>分发什么：</strong>HandleDeltas 更新 Indexer 后生成 Add、Update、Delete 通知，Processor 将同一通知 fan-out 给多个 Handler。</p>
+                <pre class="mechanism-sample">listeners = [deploymentHandler, metricsHandler]
+
+notification = updateNotification{
+  oldObj: Pod{RV:"18422"},
+  newObj: Pod{RV:"18423"},
+}
+
+Processor → listener[0]
+          → listener[1]</pre>
+              </div>
+            </details>
+
+            <details class="mechanism-item">
+              <summary><b>EventHandler</b><span>过滤事件并把对象映射成业务 key</span></summary>
+              <div class="mechanism-detail">
+                <p><strong>收到什么：</strong><code>AddFunc</code> 收新对象，<code>UpdateFunc</code> 收 old/new 两个版本，<code>DeleteFunc</code> 可能收到对象或 tombstone。</p>
+                <p><strong>留下什么：</strong>Handler 通常不保存对象，只提取 <code>namespace/name</code> 并加入 WorkQueue；耗时业务不能放在这里。</p>
+                <pre class="mechanism-sample">UpdateFunc(
+  old = Pod{RV:"18422"},
+  new = Pod{RV:"18423"},
+)
+
+key = MetaNamespaceKeyFunc(new)
+// key == "default/web"
+workQueue.Add(key)</pre>
+              </div>
+            </details>
+
+            <details class="mechanism-item">
+              <summary><b>WorkQueue</b><span>保存待处理 key，并负责去重和失败退避</span></summary>
+              <div class="mechanism-detail">
+                <p><strong>存什么：</strong>待处理 key 队列、<code>dirty</code> 集合和 <code>processing</code> 集合；RateLimitingQueue 还记录失败次数或下次允许入队时间。它不存完整 Pod/CR 对象。</p>
+                <p><strong>去重规则：</strong>同一 key 连续 Add 多次只需处理一次；若处理期间再次变脏，<code>Done</code> 后会再排队一次。</p>
+                <pre class="mechanism-sample">queue      = ["default/web"]
+dirty      = {"default/web"}
+processing = {}
+
+Get()
+→ key = "default/web"
+→ processing = {"default/web"}
+
+失败：AddRateLimited(key)
+成功：Forget(key); Done(key)</pre>
+              </div>
+            </details>
+
+            <details class="mechanism-item">
+              <summary><b>Worker / Reconcile</b><span>取 key、读最新缓存并执行状态收敛</span></summary>
+              <div class="mechanism-detail">
+                <p><strong>拿到什么：</strong>从 WorkQueue 取到的通常只有 <code>namespace/name</code>；随后用 Lister 或缓存型 Client 读取最新对象，而不是处理触发事件携带的旧快照。</p>
+                <p><strong>产生什么：</strong>创建或更新子资源、回写 status；成功后 Forget，失败则按 RateLimiter 重试。</p>
+                <pre class="mechanism-sample">key = queue.Get()              // "default/web"
+pod = lister.Pods("default").Get("web")
+                                  // 最新 RV: "18423"
+
+reconcile(pod)
+→ Create / Patch / Status Update
+→ queue.Forget(key); queue.Done(key)</pre>
+              </div>
+            </details>
           </div>
         </article>
 
@@ -1230,13 +1309,71 @@ for processNextItem(queue, podInformer.Lister()) {
       <div class="section-head" style="margin-top:32px">
         <div><div class="eyebrow">Failure & consistency</div><h2>重连、缓存一致性与 Resync</h2></div>
       </div>
-      <div class="relation-grid">
-        <article class="relation-card"><h3>初始 List 与 Cache Sync</h3><p>Informer 在初始 List 对象进入 Indexer 后才算 HasSynced。Controller 应先等待 <code>WaitForCacheSync</code>，再启动 worker，避免在空缓存上误删资源。</p><span class="relation">List snapshot → Replace Delta → Indexer → HasSynced=true</span></article>
-        <article class="relation-card"><h3>Watch 断开与 410 Gone</h3><p>Watch 是长连接但不是永久连接。Reflector 自动重试；若 resourceVersion 已从服务端历史窗口淘汰，则重新 List 建立新基线。</p><span class="relation">watch closed → retry · RV expired → relist</span></article>
-        <article class="relation-card"><h3>Resync 不是重新 List</h3><p>Resync 周期通常是把本地 Store 中的对象重新产生 <code>Sync</code> 通知，给控制器一次重新检查机会；它不等于定时访问 apiserver 全量 List。</p><span class="relation">local cache → synthetic Sync event → handler</span></article>
-        <article class="relation-card"><h3>缓存是最终一致</h3><p>写请求直达 apiserver，而下一次 cache Get 可能短暂读到旧版本。逻辑应幂等，并通过 resourceVersion、Patch/重试处理冲突。</p><span class="relation">write API → watch propagation delay → cache catches up</span></article>
-        <article class="relation-card"><h3>Delete Tombstone</h3><p>如果 Delete 事件到达时缓存里已没有对象，Handler 可能收到 <code>DeletedFinalStateUnknown</code>，必须用安全函数提取 key。</p><span class="relation">DeletionHandlingMetaNamespaceKeyFunc(obj)</span></article>
-        <article class="relation-card"><h3>SharedInformerFactory</h3><p>同一资源类型共享 Reflector、DeltaFIFO 和 Indexer；多个 Controller/Handler 共享缓存，减少 apiserver 连接数和内存复制。</p><span class="relation">one List-Watch → one cache → many handlers</span></article>
+      <div class="relation-grid consistency-grid">
+        <article class="relation-card">
+          <h3>初始 List 与 Cache Sync</h3>
+          <p>Controller 刚启动时，本地 Indexer 是空的。必须先把 apiserver 当前已有对象完整装入缓存，才能把“缓存里没有”解释成“集群里确实没有”。</p>
+          <div class="recovery-steps">
+            <div class="recovery-step"><b>1</b><p><strong>List：</strong>Reflector 拉取当前全量快照。假设集群已有 3 个 Pod，List 返回这 3 个对象和集合 RV。</p></div>
+            <div class="recovery-step"><b>2</b><p><strong>Replace：</strong>快照经 DeltaFIFO 的 Replace/初始 Deltas 被 SharedIndexInformer 消费，最终写入 Indexer。</p></div>
+            <div class="recovery-step"><b>3</b><p><strong>HasSynced：</strong>初始快照已被 Informer 处理后变为 true；Controller 才启动 worker。否则 worker 可能在空缓存上误以为 3 个 Pod 全没了，再重复创建。</p></div>
+          </div>
+          <span class="relation">HasSynced 只表示“初始快照已装入缓存”，不表示缓存强一致，也不表示每个对象都已经 Reconcile 完成。</span>
+        </article>
+        <article class="relation-card watch-recovery">
+          <h3>Watch 断开、续传与 410 Gone</h3>
+          <p>Watch 是一次持续返回事件的 HTTP 流，但连接可能因服务端超时、网络或负载均衡器中断、apiserver 重启而结束。Reflector 的关键任务是记住进度，并判断“可以从断点续传”还是“历史已丢失，必须重建基线”。</p>
+          <div class="recovery-steps">
+            <div class="recovery-step"><b>1</b><p><strong>建立基线：</strong>首次 List 得到当前对象快照，同时获得集合的 <code>resourceVersion=18421</code>。</p></div>
+            <div class="recovery-step"><b>2</b><p><strong>持续增量：</strong>Reflector 从 RV 18421 开始 Watch，依次消费 18422、18423，并记住最近同步进度。</p></div>
+            <div class="recovery-step"><b>3</b><p><strong>普通断线：</strong>若 18423 之后的历史仍在服务端 Watch Cache 中，Reflector 重新发起 <code>Watch(resourceVersion=18423)</code>，继续接收后续事件，不必重新 List。</p></div>
+            <div class="recovery-step"><b>4</b><p><strong>版本过期：</strong>若 etcd compact 或 Watch Cache 已淘汰这段历史，apiserver 无法从 18423 续传，会返回 HTTP <code>410 Gone / ResourceExpired</code>。Reflector 只能重新 List 当前快照，例如得到 RV 19000，用 Replace 重建本地基线，再从 19000 开始 Watch。</p></div>
+          </div>
+          <span class="relation">关键：重新 List 保证缓存最终回到“当前状态”，但不保证逐条重放 18424～18999 的中间事件；所以 Controller 必须按最新状态幂等收敛，不能依赖每个事件恰好处理一次。</span>
+        </article>
+        <article class="relation-card">
+          <h3>Resync 不是重新 List</h3>
+          <p>Resync 是“即使没有新 Watch 事件，也让本地对象再经过一次 Handler”的周期性提醒。对象来源仍是 Indexer 中已有的快照。</p>
+          <div class="recovery-steps">
+            <div class="recovery-step"><b>1</b><p><strong>遍历本地 Store：</strong>到达 resyncPeriod 时，Informer 查看 Indexer 中已有的 key，例如 <code>default/web</code>。</p></div>
+            <div class="recovery-step"><b>2</b><p><strong>产生 Sync Delta：</strong>DeltaFIFO 为本地对象产生 Sync/Replaced 类型的通知；通常不会因此向 apiserver 再发一次全量 List。</p></div>
+            <div class="recovery-step"><b>3</b><p><strong>重新入队：</strong>Handler 可把 key 再加入 WorkQueue，让 Reconciler 重新检查外部状态、修复漂移或弥补偶发遗漏。</p></div>
+          </div>
+          <span class="relation">数据新鲜度主要由 List-Watch 保证；Resync 是周期性重算的安全网，不是 Watch 重连机制，也不是定时刷新缓存。</span>
+        </article>
+
+        <article class="relation-card">
+          <h3>缓存为什么是最终一致</h3>
+          <p>Controller 的写请求直接到 apiserver，但普通 Get/List 默认读本地 Cache。写成功到 Watch 事件回到本进程之间存在传播延迟。</p>
+          <div class="recovery-steps">
+            <div class="recovery-step"><b>1</b><p><strong>写入：</strong>Reconciler 把 Deployment replicas 从 2 Patch 为 3，apiserver 返回成功和新 RV。</p></div>
+            <div class="recovery-step"><b>2</b><p><strong>短暂旧读：</strong>紧接着从 Cache Get，可能仍看到 replicas=2，因为 MODIFIED 事件尚未经过 Reflector、DeltaFIFO 和 Indexer。</p></div>
+            <div class="recovery-step"><b>3</b><p><strong>最终追上：</strong>Watch 事件到达后，Indexer 更新为 replicas=3；子资源事件通常还会再次触发 Reconcile。</p></div>
+          </div>
+          <span class="relation">逻辑必须幂等并处理 AlreadyExists、NotFound、Conflict。只有确实要求最新服务端值时才用 APIReader 直读，不能把它当默认方案。</span>
+        </article>
+
+        <article class="relation-card">
+          <h3>Delete Tombstone 到底是什么</h3>
+          <p>Delete Handler 理想情况下收到被删除对象；但若删除通知到达时本地 Store 已找不到对象，Informer 只能交付一个 <code>DeletedFinalStateUnknown</code> 包装。</p>
+          <div class="recovery-steps">
+            <div class="recovery-step"><b>1</b><p><strong>正常情况：</strong><code>DeleteFunc(pod)</code>，可以直接从 Pod 提取 <code>default/web</code>。</p></div>
+            <div class="recovery-step"><b>2</b><p><strong>Tombstone：</strong><code>DeleteFunc(DeletedFinalStateUnknown{Key:"default/web", Obj:lastKnownPod})</code>，至少保留 key，可能还带最后已知对象。</p></div>
+            <div class="recovery-step"><b>3</b><p><strong>安全取 key：</strong>使用 <code>DeletionHandlingMetaNamespaceKeyFunc</code> 同时兼容真实对象和 tombstone，避免类型断言 panic。</p></div>
+          </div>
+          <span class="relation">这里的 tombstone 是 client-go 内存中的删除事件包装，不是 metadata.finalizers，也不是 etcd 墓碑对象。</span>
+        </article>
+
+        <article class="relation-card">
+          <h3>SharedInformerFactory 共享什么</h3>
+          <p>同一进程里，多个 Controller 可能都关注 Pods。若各自建立 List-Watch，会重复占用 apiserver 连接、缓存和内存。</p>
+          <div class="recovery-steps">
+            <div class="recovery-step"><b>1</b><p><strong>按资源复用：</strong>同一个 Factory 对同一资源类型通常只创建一套 Reflector、DeltaFIFO、SharedIndexInformer 和 Indexer。</p></div>
+            <div class="recovery-step"><b>2</b><p><strong>多 Handler 分发：</strong>SharedProcessor 把同一份 Add/Update/Delete 通知 fan-out 给多个 Listener；每个 Controller 仍可拥有自己的 WorkQueue。</p></div>
+            <div class="recovery-step"><b>3</b><p><strong>统一启动：</strong><code>factory.Start(stopCh)</code> 启动 Informer，<code>WaitForCacheSync</code> 等待各缓存完成初始同步，再启动业务 worker。</p></div>
+          </div>
+          <span class="relation">共享的是“远端同步和本地缓存层”，不是把多个 Controller 的业务 WorkQueue 或 Reconcile 逻辑合并成一个。</span>
+        </article>
       </div>
 
       <div class="section-head" style="margin-top:32px">
@@ -1573,6 +1710,29 @@ func (r *MyAppReconciler) Reconcile(
       activeFilter = button.dataset.filter;
       filterRows();
     }));
+  </script>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "strict",
+      flowchart: { curve: "basis", htmlLabels: true, nodeSpacing: 34, rankSpacing: 42 },
+      themeVariables: {
+        background: "#0a1220",
+        primaryColor: "#060d18",
+        primaryTextColor: "#eef4ff",
+        primaryBorderColor: "#5eb3ff",
+        lineColor: "#8aa3c4",
+        secondaryColor: "#0f1a2e",
+        tertiaryColor: "#060d18",
+        clusterBkg: "#0a1220",
+        clusterBorder: "#1e3352",
+        edgeLabelBackground: "#0a1220",
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+        fontSize: "14px"
+      }
+    });
   </script>
 </body>
 </html>
